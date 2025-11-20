@@ -150,12 +150,6 @@ function processWithMapping() {
   matchState.warnings.push(...warnings);
   summarize(normalizedRows, matchState.warnings);
   renderPreview();
-  renderDecisionUI(decisionArea, matchState, dictionaries, () => {
-    summarize([...matchState.autoMatched, ...matchState.needsReview], matchState.warnings);
-    renderPreview();
-    renderDecisionUI(decisionArea, matchState, dictionaries, () => {});
-  });
-  renderLetterArea();
 }
 
 function renderPreview() {
@@ -406,10 +400,6 @@ analyzeBtn.addEventListener("click", async () => {
     if (!document.getElementById("mappingArea")) {
       main.insertBefore(mappingArea, main.children[1] || null);
     }
-    if (!document.getElementById("decisionArea")) {
-      main.appendChild(decisionArea);
-    }
-
     processWithMapping();
   } catch (err) {
     console.error(err);
