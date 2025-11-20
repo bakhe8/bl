@@ -13,6 +13,10 @@ Starter repository initialized locally. Kick things off by cloning, creating you
 - Extend the workflow with your stack (npm, Python, .NET, etc.) so pushes and PRs run your tests automatically.
 - Badge above tracks the latest `main` build.
 
+## Documentation
+- الدليل الرئيسي موجود في `docs/README.md` مع فهرس مبدئي يجب تحديثه باستمرار مع أي تغيير وظيفي أو معماري.
+- أضف ملفات تفصيلية داخل `docs/` عند توسعة المحتوى (مثلاً `docs/architecture.md`, `docs/setup.md`) وحافظ على الفهرس محدثاً.
+
 ## Notes
 - Remote is expected at `git@github.com:bakhe8/bl.git`.
 - Add a LICENSE when you decide on one.
