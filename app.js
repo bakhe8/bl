@@ -11,6 +11,7 @@ import { normalizeRows } from "./modules/normalizer.js";
 import { loadDictionaries, saveDictionaries } from "./modules/dictionaryEngine.js";
 import { matchRows } from "./modules/matchingEngine.js";
 import { renderDecisionUI } from "./modules/decisionUI.js";
+import { loadTemplate, renderLetter } from "./modules/letterBuilder.js";
 
 const excelInput = document.getElementById("excelInput");
 const analyzeBtn = document.getElementById("analyzeBtn");
@@ -25,6 +26,9 @@ mappingArea.className = "card";
 const decisionArea = document.createElement("div");
 decisionArea.id = "decisionArea";
 decisionArea.className = "card";
+const letterArea = document.createElement("div");
+letterArea.id = "letterArea";
+letterArea.className = "card";
 
 let selectedFile = null;
 let rawRowsCache = [];
@@ -32,6 +36,13 @@ let headersCache = [];
 let mappingState = {};
 let dictionaries = loadDictionaries();
 let matchState = { autoMatched: [], needsReview: [], warnings: [] };
+let letterTemplateHtml = "";
+
+async function ensureLetterTemplate() {
+  if (!letterTemplateHtml) {
+    letterTemplateHtml = await loadTemplate();
+  }
+}
 
 function resetUI() {
   errorMessage.textContent = "";
@@ -138,6 +149,7 @@ function processWithMapping() {
     renderPreview();
     renderDecisionUI(decisionArea, matchState, dictionaries, () => {});
   });
+  renderLetterArea();
 }
 
 function renderPreview() {
@@ -158,6 +170,40 @@ function renderPreview() {
   `;
   resultsArea.innerHTML = summaryHtml;
   resultsArea.appendChild(pre);
+}
+
+function renderLetterArea() {
+  if (!letterArea) return;
+  const firstRow = matchState.autoMatched[0];
+  letterArea.innerHTML = `
+    <div class="card-head">
+      <div>
+        <h2>معاينة الخطاب</h2>
+        <p class="muted">${firstRow ? "جاهز لإنشاء خطاب للصف الأول المتطابق تلقائياً." : "لا توجد صفوف مطابقة حتى الآن."}</p>
+      </div>
+      <button id="buildLetterBtn" ${firstRow ? "" : "disabled"}>توليد خطاب</button>
+    </div>
+    <iframe id="letterFrame" class="letter-frame" title="معاينة الخطاب"></iframe>
+  `;
+
+  const btn = letterArea.querySelector("#buildLetterBtn");
+  const frame = letterArea.querySelector("#letterFrame");
+  if (firstRow && btn && frame) {
+    btn.addEventListener("click", async () => {
+      await ensureLetterTemplate();
+      const html = renderLetter(
+        {
+          ...firstRow,
+          sender_name: "اسم المرسل",
+          sender_position: "الوظيفة",
+          department_name: "الإدارة",
+          hospital_name: "المستشفى",
+        },
+        letterTemplateHtml
+      );
+      frame.srcdoc = html;
+    });
+  }
 }
 
 excelInput.addEventListener("change", (e) => {

@@ -188,6 +188,14 @@ button[disabled] {
   margin-top: 0.3rem;
 }
 
+.letter-frame {
+  width: 100%;
+  height: 420px;
+  border: 1px solid #d5deea;
+  border-radius: 0.6rem;
+  background: #fff;
+}
+
 @media (max-width: 720px) {
   .app-main, .app-header {
     padding: 1.1rem;
