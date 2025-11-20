@@ -70,3 +70,4 @@
 {{department_name}}
 {{hospital_name}}
 ```
+القالب موجود أيضاً بصيغة HTML في `templates/letter_template.html` مع CSS للطباعة ومحاذاة RTL.
