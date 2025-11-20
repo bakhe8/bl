@@ -8,7 +8,14 @@ import {
   saveMapping,
 } from "./modules/columnMapper.js";
 import { normalizeRows } from "./modules/normalizer.js";
-import { loadDictionaries, saveDictionaries } from "./modules/dictionaryEngine.js";
+import {
+  loadDictionaries,
+  saveDictionaries,
+  addOfficial,
+  addOrUpdateVariant,
+  getOfficialList,
+  getOfficialNameById,
+} from "./modules/dictionaryEngine.js";
 import { matchRows } from "./modules/matchingEngine.js";
 import { renderDecisionUI } from "./modules/decisionUI.js";
 import { loadTemplate, renderLetter } from "./modules/letterBuilder.js";
@@ -23,12 +30,11 @@ const summaryChip = document.getElementById("summaryChip");
 const mappingArea = document.createElement("div");
 mappingArea.id = "mappingArea";
 mappingArea.className = "card";
-const decisionArea = document.createElement("div");
-decisionArea.id = "decisionArea";
-decisionArea.className = "card";
-const letterArea = document.createElement("div");
-letterArea.id = "letterArea";
-letterArea.className = "card";
+const modalOverlay = document.getElementById("modalOverlay");
+const modalBody = document.getElementById("modalBody");
+const modalTitle = document.getElementById("modalTitle");
+const modalPrimary = document.getElementById("modalPrimary");
+const modalClose = document.getElementById("modalClose");
 
 let selectedFile = null;
 let rawRowsCache = [];
@@ -167,43 +173,156 @@ function renderPreview() {
     <div class="pill">تعيين مكتمل</div>
     <div class="pill">مطابق تلقائي: ${matchState.autoMatched.length}</div>
     <div class="pill">يحتاج قرار: ${matchState.needsReview.length}</div>
+    <button id="resolveBtn" ${matchState.needsReview.length ? "" : "disabled"}>حل الحالات المعلقة</button>
+    <button id="previewLetterBtn" ${matchState.autoMatched.length ? "" : "disabled"}>معاينة خطاب</button>
   `;
   resultsArea.innerHTML = summaryHtml;
   resultsArea.appendChild(pre);
+
+  const resolveBtn = document.getElementById("resolveBtn");
+  const previewBtn = document.getElementById("previewLetterBtn");
+  resolveBtn?.addEventListener("click", () => openDecisionModal());
+  previewBtn?.addEventListener("click", () => openLetterModal());
 }
 
-function renderLetterArea() {
-  if (!letterArea) return;
-  const firstRow = matchState.autoMatched[0];
-  letterArea.innerHTML = `
-    <div class="card-head">
-      <div>
-        <h2>معاينة الخطاب</h2>
-        <p class="muted">${firstRow ? "جاهز لإنشاء خطاب للصف الأول المتطابق تلقائياً." : "لا توجد صفوف مطابقة حتى الآن."}</p>
-      </div>
-      <button id="buildLetterBtn" ${firstRow ? "" : "disabled"}>توليد خطاب</button>
-    </div>
-    <iframe id="letterFrame" class="letter-frame" title="معاينة الخطاب"></iframe>
-  `;
+function openModal(title, bodyBuilder, primaryLabel = "إغلاق", onPrimary) {
+  modalTitle.textContent = title;
+  modalBody.innerHTML = "";
+  bodyBuilder(modalBody);
+  modalPrimary.textContent = primaryLabel;
+  modalPrimary.onclick = () => {
+    onPrimary?.();
+    closeModal();
+  };
+  modalClose.onclick = closeModal;
+  modalOverlay.classList.add("open");
+  modalOverlay.setAttribute("aria-hidden", "false");
+}
 
-  const btn = letterArea.querySelector("#buildLetterBtn");
-  const frame = letterArea.querySelector("#letterFrame");
-  if (firstRow && btn && frame) {
-    btn.addEventListener("click", async () => {
-      await ensureLetterTemplate();
-      const html = renderLetter(
-        {
-          ...firstRow,
-          sender_name: "اسم المرسل",
-          sender_position: "الوظيفة",
-          department_name: "الإدارة",
-          hospital_name: "المستشفى",
-        },
-        letterTemplateHtml
-      );
-      frame.srcdoc = html;
+function closeModal() {
+  modalOverlay.classList.remove("open");
+  modalOverlay.setAttribute("aria-hidden", "true");
+}
+
+function openDecisionModal() {
+  if (!matchState.needsReview.length) {
+    openModal("لا توجد حالات", (body) => {
+      body.innerHTML = "<p class='muted'>لا يوجد صفوف تحتاج قرار.</p>";
     });
+    return;
   }
+  const item = matchState.needsReview[0];
+  const bankOptions = getOfficialList(dictionaries, "banks")
+    .map((b) => `<option value="${b.id}">${b.name}</option>`)
+    .join("");
+  const supplierOptions = getOfficialList(dictionaries, "suppliers")
+    .map((s) => `<option value="${s.id}">${s.name}</option>`)
+    .join("");
+  openModal("حل حالة غامضة", (body) => {
+    body.innerHTML = `
+      <p class="muted">صف: ${item.rowIndex ?? "?"}</p>
+      <div class="field-group">
+        <div class="decision-field">
+          <div class="muted">البنك الخام</div>
+          <div>${item.bank_raw || "<فارغ>"}</div>
+          <select id="bankSelect" class="mapping-select">
+            <option value="">اختر بنكاً رسمياً</option>
+            ${bankOptions}
+          </select>
+          <input id="bankNew" type="text" placeholder="أو أدخل بنكاً جديداً (عربي)" class="decision-input" />
+        </div>
+        <div class="decision-field">
+          <div class="muted">المورد الخام</div>
+          <div>${item.supplier_raw || "<فارغ>"}</div>
+          <select id="supplierSelect" class="mapping-select">
+            <option value="">اختر مورداً رسمياً</option>
+            ${supplierOptions}
+          </select>
+          <input id="supplierNew" type="text" placeholder="أو أدخل مورداً جديداً" class="decision-input" />
+        </div>
+      </div>
+      <p id="decisionError" class="error"></p>
+    `;
+    modalPrimary.textContent = "حفظ القرار";
+    modalPrimary.onclick = () => {
+      const bankSelect = body.querySelector("#bankSelect");
+      const supplierSelect = body.querySelector("#supplierSelect");
+      const bankNew = body.querySelector("#bankNew");
+      const supplierNew = body.querySelector("#supplierNew");
+      const errorEl = body.querySelector("#decisionError");
+      let bankId = bankSelect?.value || "";
+      let supplierId = supplierSelect?.value || "";
+
+      if (!bankId && bankNew?.value.trim()) {
+        dictionaries = addOfficial(dictionaries, "banks", bankNew.value.trim());
+        const list = getOfficialList(dictionaries, "banks");
+        bankId = list[list.length - 1]?.id || "";
+      }
+      if (!supplierId && supplierNew?.value.trim()) {
+        dictionaries = addOfficial(dictionaries, "suppliers", supplierNew.value.trim());
+        const list = getOfficialList(dictionaries, "suppliers");
+        supplierId = list[list.length - 1]?.id || "";
+      }
+      if (!bankId || !supplierId) {
+        if (errorEl) errorEl.textContent = "يجب تحديد بنك ومورد قبل الحفظ.";
+        return;
+      }
+      addOrUpdateVariant(dictionaries, "banks", item.bank_raw, bankId);
+      addOrUpdateVariant(dictionaries, "suppliers", item.supplier_raw, supplierId);
+      saveDictionaries(dictionaries);
+
+      const resolved = { ...item };
+      resolved.bank_match = {
+        matched: true,
+        officialId: bankId,
+        officialName: getOfficialNameById(dictionaries, "banks", bankId),
+        confidence: 1,
+      };
+      resolved.supplier_match = {
+        matched: true,
+        officialId: supplierId,
+        officialName: getOfficialNameById(dictionaries, "suppliers", supplierId),
+        confidence: 1,
+      };
+      matchState.needsReview.shift();
+      matchState.autoMatched.push(resolved);
+
+      renderPreview();
+      if (matchState.needsReview.length) {
+        openDecisionModal();
+      } else {
+        closeModal();
+      }
+    };
+  });
+}
+
+async function openLetterModal() {
+  if (!matchState.autoMatched.length) {
+    openModal("لا توجد خطابات", (body) => {
+      body.innerHTML = "<p class='muted'>لا توجد صفوف مطابقة لعرض خطاب.</p>";
+    });
+    return;
+  }
+  await ensureLetterTemplate();
+  const firstRow = matchState.autoMatched[0];
+  const html = renderLetter(
+    {
+      ...firstRow,
+      sender_name: "اسم المرسل",
+      sender_position: "الوظيفة",
+      department_name: "الإدارة",
+      hospital_name: "المستشفى",
+    },
+    letterTemplateHtml
+  );
+  openModal("معاينة الخطاب", (body) => {
+    const frame = document.createElement("iframe");
+    frame.className = "letter-frame";
+    frame.title = "معاينة الخطاب";
+    frame.srcdoc = html;
+    body.appendChild(frame);
+  }, "إغلاق", () => {});
 }
 
 excelInput.addEventListener("change", (e) => {
