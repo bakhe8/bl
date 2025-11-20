@@ -63,3 +63,8 @@ Upload Excel → Parse → Normalize → Match → Decision UI → Letter Builde
 - متصفح حديث (Chrome/Edge) للطباعة إلى PDF.
 - طبقة حماية عرض: تعقيم/ترميز القيم قبل حقنها في DOM لمنع XSS عند استعراض بيانات Excel.
 - استخدم دالة sanitize (مثل: `text.replace(/[<>]/g, "")`) لأي نص خام قبل العرض.
+
+## نقاط التعقيم (Sanitize Pipeline Points)
+- بعد القراءة والتطبيع من Excel: تعقيم القيم قبل تخزينها في الذاكرة.
+- قبل عرضها في جدول القرارات: ترميز/تعقيم لكل خلية تعرض محتوى Excel الخام.
+- قبل الحقن في `letter_template.html`: تعقيم placeholders لضمان خلوّها من رموز HTML.
