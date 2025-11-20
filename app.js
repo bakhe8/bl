@@ -8,6 +8,8 @@ import {
   saveMapping,
 } from "./modules/columnMapper.js";
 import { normalizeRows } from "./modules/normalizer.js";
+import { loadDictionaries, saveDictionaries } from "./modules/dictionaryEngine.js";
+import { matchRows } from "./modules/matchingEngine.js";
 
 const excelInput = document.getElementById("excelInput");
 const analyzeBtn = document.getElementById("analyzeBtn");
@@ -24,6 +26,7 @@ let selectedFile = null;
 let rawRowsCache = [];
 let headersCache = [];
 let mappingState = {};
+let dictionaries = loadDictionaries();
 
 function resetUI() {
   errorMessage.textContent = "";
@@ -120,11 +123,25 @@ function processWithMapping() {
   const { rows: mappedRows, warnings: mapWarnings } = applyMapping(rawRowsCache, mappingState);
   warnings.push(...mapWarnings);
   const normalizedRows = normalizeRows(mappedRows);
+
+  const matchResult = matchRows(normalizedRows, dictionaries);
+  warnings.push(...matchResult.warnings);
   summarize(normalizedRows, warnings);
-  const preview = normalizedRows.slice(0, 10);
+
+  const preview = {
+    autoMatched: matchResult.autoMatched.slice(0, 5),
+    needsReview: matchResult.needsReview.slice(0, 5),
+  };
   const pre = document.createElement("pre");
   pre.textContent = JSON.stringify({ preview, warnings }, null, 2);
-  resultsArea.textContent = "";
+
+  // عرض بسيط للقوائم
+  const summaryHtml = `
+    <div class="pill">تعيين مكتمل</div>
+    <div class="pill">مطابق تلقائي: ${matchResult.autoMatched.length}</div>
+    <div class="pill">يحتاج قرار: ${matchResult.needsReview.length}</div>
+  `;
+  resultsArea.innerHTML = summaryHtml;
   resultsArea.appendChild(pre);
 }
 
