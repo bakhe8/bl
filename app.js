@@ -10,6 +10,7 @@ import {
 import { normalizeRows } from "./modules/normalizer.js";
 import { loadDictionaries, saveDictionaries } from "./modules/dictionaryEngine.js";
 import { matchRows } from "./modules/matchingEngine.js";
+import { renderDecisionUI } from "./modules/decisionUI.js";
 
 const excelInput = document.getElementById("excelInput");
 const analyzeBtn = document.getElementById("analyzeBtn");
@@ -21,12 +22,16 @@ const summaryChip = document.getElementById("summaryChip");
 const mappingArea = document.createElement("div");
 mappingArea.id = "mappingArea";
 mappingArea.className = "card";
+const decisionArea = document.createElement("div");
+decisionArea.id = "decisionArea";
+decisionArea.className = "card";
 
 let selectedFile = null;
 let rawRowsCache = [];
 let headersCache = [];
 let mappingState = {};
 let dictionaries = loadDictionaries();
+let matchState = { autoMatched: [], needsReview: [], warnings: [] };
 
 function resetUI() {
   errorMessage.textContent = "";
@@ -124,22 +129,32 @@ function processWithMapping() {
   warnings.push(...mapWarnings);
   const normalizedRows = normalizeRows(mappedRows);
 
-  const matchResult = matchRows(normalizedRows, dictionaries);
-  warnings.push(...matchResult.warnings);
-  summarize(normalizedRows, warnings);
+  matchState = matchRows(normalizedRows, dictionaries);
+  matchState.warnings.push(...warnings);
+  summarize(normalizedRows, matchState.warnings);
+  renderPreview();
+  renderDecisionUI(decisionArea, matchState, dictionaries, () => {
+    summarize([...matchState.autoMatched, ...matchState.needsReview], matchState.warnings);
+    renderPreview();
+    renderDecisionUI(decisionArea, matchState, dictionaries, () => {});
+  });
+}
 
+function renderPreview() {
   const preview = {
-    autoMatched: matchResult.autoMatched.slice(0, 5),
-    needsReview: matchResult.needsReview.slice(0, 5),
+    autoMatched: matchState.autoMatched.slice(0, 5),
+    needsReview: matchState.needsReview.slice(0, 5),
   };
   const pre = document.createElement("pre");
-  pre.textContent = JSON.stringify({ preview, warnings }, null, 2);
-
-  // عرض بسيط للقوائم
+  pre.textContent = JSON.stringify(
+    { preview, warnings: matchState.warnings },
+    null,
+    2
+  );
   const summaryHtml = `
     <div class="pill">تعيين مكتمل</div>
-    <div class="pill">مطابق تلقائي: ${matchResult.autoMatched.length}</div>
-    <div class="pill">يحتاج قرار: ${matchResult.needsReview.length}</div>
+    <div class="pill">مطابق تلقائي: ${matchState.autoMatched.length}</div>
+    <div class="pill">يحتاج قرار: ${matchState.needsReview.length}</div>
   `;
   resultsArea.innerHTML = summaryHtml;
   resultsArea.appendChild(pre);
@@ -200,6 +215,9 @@ analyzeBtn.addEventListener("click", async () => {
     const main = document.querySelector(".app-main");
     if (!document.getElementById("mappingArea")) {
       main.insertBefore(mappingArea, main.children[1] || null);
+    }
+    if (!document.getElementById("decisionArea")) {
+      main.appendChild(decisionArea);
     }
 
     processWithMapping();

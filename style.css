@@ -171,6 +171,23 @@ button[disabled] {
   margin: 0.15rem 0;
 }
 
+.decision-block {
+  margin-top: 0.6rem;
+}
+
+.decision-field {
+  flex: 1;
+  min-width: 240px;
+}
+
+.decision-input {
+  width: 100%;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid #cdd7e3;
+  margin-top: 0.3rem;
+}
+
 @media (max-width: 720px) {
   .app-main, .app-header {
     padding: 1.1rem;
