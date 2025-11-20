@@ -134,6 +134,43 @@ button[disabled] {
   color: #3a4a61;
 }
 
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+}
+
+.mapping-table th,
+.mapping-table td {
+  border: 1px solid #e3e9f1;
+  padding: 0.4rem 0.5rem;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.mapping-table th {
+  background: #f5f7fb;
+  color: #3a4a61;
+}
+
+.mapping-select {
+  width: 100%;
+  padding: 0.3rem;
+  border-radius: 0.4rem;
+  border: 1px solid #cdd7e3;
+}
+
+.warning-list {
+  margin: 0.4rem 0 0 0;
+  padding-left: 1rem;
+  color: #b05a00;
+  font-size: 0.9rem;
+}
+
+.warning-list li {
+  margin: 0.15rem 0;
+}
+
 @media (max-width: 720px) {
   .app-main, .app-header {
     padding: 1.1rem;

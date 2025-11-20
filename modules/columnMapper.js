@@ -1,4 +1,4 @@
-const REQUIRED_FIELDS = [
+export const REQUIRED_FIELDS = [
   "bank_raw",
   "supplier_raw",
   "guarantee_no",
@@ -11,11 +11,13 @@ const REQUIRED_FIELDS = [
 const FIELD_SYNONYMS = {
   bank_raw: ["bank", "bank name", "اسم البنك", "البنك"],
   supplier_raw: ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد"],
-  guarantee_no: ["guarantee no", "guarantee", "bond_no", "رقم الضمان"],
+  guarantee_no: ["guarantee no", "guarantee", "bond no", "bond_no", "رقم الضمان"],
   contract_no: ["contract", "contract no", "رقم العقد"],
   amount_raw: ["amount", "value", "المبلغ"],
   renewal_date_raw: ["date", "expiry", "renewal", "تاريخ الانتهاء", "expiry date"],
 };
+
+const MAPPING_KEY = "gl_mapping_v1";
 
 function normalizeHeader(value) {
   return String(value || "")
@@ -25,50 +27,62 @@ function normalizeHeader(value) {
     .replace(/\s+/g, " ");
 }
 
-export function mapColumns(rawRows) {
-  const warnings = [];
-  if (!rawRows.length) return { rows: [], warnings };
+export function loadStoredMapping() {
+  try {
+    const raw = localStorage.getItem(MAPPING_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
 
-  const headers = Object.keys(rawRows[0] || {}).map((h) => ({
-    original: h,
-    norm: normalizeHeader(h),
-  }));
+export function saveMapping(mapping) {
+  try {
+    localStorage.setItem(MAPPING_KEY, JSON.stringify(mapping));
+  } catch {
+    // تجاهل في حال تجاوز السعة
+  }
+}
 
-  const headerToField = {};
-  headers.forEach(({ original, norm }) => {
-    for (const [field, synonyms] of Object.entries(FIELD_SYNONYMS)) {
-      if (synonyms.includes(norm)) {
-        headerToField[original] = field;
-        break;
-      }
+// اكتشاف التعيين بناءً على المرادفات مع اعتماد المخزن إذا كان صالحاً
+export function detectMapping(headers, storedMapping = {}) {
+  const mapping = {};
+  const normalizedHeaders = headers.map((h) => ({ original: h, norm: normalizeHeader(h) }));
+
+  REQUIRED_FIELDS.forEach((field) => {
+    // أولوية للمخزن إذا كان العمود موجوداً
+    const stored = storedMapping[field];
+    if (stored && headers.includes(stored)) {
+      mapping[field] = stored;
+      return;
     }
+    // البحث بالمرادفات
+    const synonyms = FIELD_SYNONYMS[field] || [];
+    const match = normalizedHeaders.find((h) => synonyms.includes(h.norm));
+    mapping[field] = match ? match.original : "";
   });
 
-  const mappedRows = rawRows.map((row, idx) => {
+  return mapping;
+}
+
+export function applyMapping(rawRows, mapping) {
+  const warnings = [];
+  const rows = rawRows.map((row, idx) => {
     const mapped = {};
-    for (const [key, value] of Object.entries(row)) {
-      const target = headerToField[key];
-      if (target) {
-        mapped[target] = value;
+    REQUIRED_FIELDS.forEach((logical) => {
+      const header = mapping[logical];
+      if (header && row.hasOwnProperty(header)) {
+        mapped[logical] = row[header];
+      } else {
+        mapped[logical] = "";
       }
-    }
-    REQUIRED_FIELDS.forEach((field) => {
-      if (!(field in mapped)) mapped[field] = "";
     });
-    // تنبيه إذا لم تُكتشف أعمدة مطلوبة
     const missing = REQUIRED_FIELDS.filter((f) => !mapped[f] || String(mapped[f]).trim() === "");
     if (missing.length) {
       warnings.push(`صف ${idx + 2}: حقول ناقصة ${missing.join(", ")}`);
     }
     return mapped;
   });
-
-  const unmappedFields = REQUIRED_FIELDS.filter(
-    (field) => !Object.values(headerToField).includes(field)
-  );
-  if (unmappedFields.length) {
-    warnings.push(`ملحوظة: لم يتم العثور على أعمدة مطابقة لـ: ${unmappedFields.join(", ")}`);
-  }
-
-  return { rows: mappedRows, warnings };
+  return { rows, warnings };
 }
