@@ -1,0 +1,145 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  direction: rtl;
+  background: #f5f6fa;
+  color: #1f2833;
+}
+
+.app-header {
+  background: linear-gradient(120deg, #0f4c75, #3282b8);
+  color: #fff;
+  padding: 1.5rem 2rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+}
+
+.app-header h1 {
+  margin: 0.25rem 0 0.3rem 0;
+  font-size: 1.5rem;
+}
+
+.lede {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.app-main {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 0.9rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e7ecf3;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.card h2 {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.1rem;
+}
+
+.muted {
+  color: #6c7a90;
+  font-size: 0.9rem;
+  margin: 0.1rem 0;
+}
+
+.field-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+input[type="file"] {
+  padding: 0.35rem 0;
+}
+
+button {
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.6rem;
+  border: none;
+  cursor: pointer;
+  background: #0f4c75;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: transform 0.08s ease, opacity 0.2s ease;
+}
+
+button:hover:not([disabled]) {
+  transform: translateY(-1px);
+}
+
+button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.results {
+  min-height: 120px;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  background: #f7f9fc;
+  border: 1px dashed #d5deea;
+  border-radius: 0.6rem;
+  padding: 0.8rem;
+}
+
+.error {
+  color: #c1272d;
+  font-size: 0.9rem;
+  margin: 0.3rem 0 0 0;
+}
+
+.chip {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #eef2f8;
+  font-size: 0.85rem;
+  border: 1px solid #dce3ed;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: #eef2f8;
+  border: 1px solid #dce3ed;
+  font-size: 0.8rem;
+  margin: 0 0.25rem 0.25rem 0;
+  color: #3a4a61;
+}
+
+@media (max-width: 720px) {
+  .app-main, .app-header {
+    padding: 1.1rem;
+  }
+  .card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
