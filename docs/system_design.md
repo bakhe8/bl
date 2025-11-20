@@ -55,8 +55,9 @@ Upload Excel → Parse → Normalize → Match → Decision UI → Letter Builde
 
 ## التخزين
 - LocalStorage كمصدر رئيسي للقواميس التعلمية.
-- ملفات JSON للتصدير/الاستيراد (القواميس والـ column mapping) لضمان النسخ الاحتياطي والتنقل بين الأجهزة.
+- ملفات JSON للتصدير/الاستيراد (القواميس والـ column mapping) مع `schemaVersion` لضمان النسخ الاحتياطي والتنقل بين الأجهزة.
 
 ## اعتماديات
 - SheetJS لقراءة Excel.
 - متصفح حديث (Chrome/Edge) للطباعة إلى PDF.
+- طبقة حماية عرض: تعقيم/ترميز القيم قبل حقنها في DOM لمنع XSS عند استعراض بيانات Excel.
