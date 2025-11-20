@@ -17,7 +17,6 @@ import {
   getOfficialNameById,
 } from "./modules/dictionaryEngine.js";
 import { matchRows } from "./modules/matchingEngine.js";
-import { renderDecisionUI } from "./modules/decisionUI.js";
 import { loadTemplate, renderLetter } from "./modules/letterBuilder.js";
 
 const excelInput = document.getElementById("excelInput");
@@ -34,6 +33,7 @@ const modalOverlay = document.getElementById("modalOverlay");
 const modalBody = document.getElementById("modalBody");
 const modalTitle = document.getElementById("modalTitle");
 const modalPrimary = document.getElementById("modalPrimary");
+const modalSecondary = document.getElementById("modalSecondary");
 const modalClose = document.getElementById("modalClose");
 
 let selectedFile = null;
@@ -185,7 +185,8 @@ function renderPreview() {
   previewBtn?.addEventListener("click", () => openLetterModal());
 }
 
-function openModal(title, bodyBuilder, primaryLabel = "إغلاق", onPrimary) {
+function openModal(title, bodyBuilder, options = {}) {
+  const { primaryLabel = "إغلاق", onPrimary, secondaryLabel, onSecondary } = options;
   modalTitle.textContent = title;
   modalBody.innerHTML = "";
   bodyBuilder(modalBody);
@@ -194,6 +195,17 @@ function openModal(title, bodyBuilder, primaryLabel = "إغلاق", onPrimary) {
     onPrimary?.();
     closeModal();
   };
+  if (secondaryLabel) {
+    modalSecondary.textContent = secondaryLabel;
+    modalSecondary.style.display = "inline-block";
+    modalSecondary.onclick = () => {
+      onSecondary?.();
+      closeModal();
+    };
+  } else {
+    modalSecondary.style.display = "none";
+    modalSecondary.onclick = null;
+  }
   modalClose.onclick = closeModal;
   modalOverlay.classList.add("open");
   modalOverlay.setAttribute("aria-hidden", "false");
@@ -294,7 +306,7 @@ function openDecisionModal() {
         closeModal();
       }
     };
-  });
+  }, { primaryLabel: "حفظ القرار" });
 }
 
 async function openLetterModal() {
@@ -316,13 +328,26 @@ async function openLetterModal() {
     },
     letterTemplateHtml
   );
-  openModal("معاينة الخطاب", (body) => {
-    const frame = document.createElement("iframe");
-    frame.className = "letter-frame";
-    frame.title = "معاينة الخطاب";
-    frame.srcdoc = html;
-    body.appendChild(frame);
-  }, "إغلاق", () => {});
+  openModal(
+    "معاينة الخطاب",
+    (body) => {
+      const frame = document.createElement("iframe");
+      frame.className = "letter-frame";
+      frame.title = "معاينة الخطاب";
+      frame.srcdoc = html;
+      frame.id = "letterFrameModal";
+      body.appendChild(frame);
+    },
+    {
+      primaryLabel: "إغلاق",
+      secondaryLabel: "طباعة / حفظ PDF",
+      onSecondary: () => {
+        const frameEl = document.getElementById("letterFrameModal");
+        frameEl?.contentWindow?.focus();
+        frameEl?.contentWindow?.print();
+      },
+    }
+  );
 }
 
 excelInput.addEventListener("change", (e) => {

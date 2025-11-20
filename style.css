@@ -269,6 +269,11 @@ button[disabled] {
   color: #fff;
 }
 
+.modal-footer button.secondary {
+  background: #eef2f8;
+  color: #1f2833;
+}
+
 @media (max-width: 720px) {
   .app-main, .app-header {
     padding: 1.1rem;
