@@ -14,8 +14,8 @@ Starter repository initialized locally. Kick things off by cloning, creating you
 - Badge above tracks the latest `main` build.
 
 ## Documentation
-- الدليل الرئيسي موجود في `docs/README.md` مع فهرس مبدئي يجب تحديثه باستمرار مع أي تغيير وظيفي أو معماري.
-- أضف ملفات تفصيلية داخل `docs/` عند توسعة المحتوى (مثلاً `docs/architecture.md`, `docs/setup.md`) وحافظ على الفهرس محدثاً.
+- الوثائق تبدأ من `docs/README.md` مع روابط إلى ملفات التفاصيل: نظرة عامة، متطلبات، معمارية، إعداد وتشغيل، وتشغيل يومي.
+- يتم تغذية الوثائق من تعليمات `docs/draft.md`؛ حافظ على المسودة محدثة ليُعاد تنظيم الوثائق بناءً عليها.
 
 ## Notes
 - Remote is expected at `git@github.com:bakhe8/bl.git`.
