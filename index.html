@@ -4,105 +4,288 @@
   <meta charset="UTF-8" />
   <title>نظام توليد خطابات تمديد الضمانات البنكية</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- React UMD + Babel + SheetJS للعمل عبر file:// بدون سيرفر -->
   <script src="libs/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
   <noscript>يرجى تفعيل جافاسكريبت لتعمل الصفحة.</noscript>
-  <header class="app-header">
-    <div>
-      <p class="eyebrow">Guarantee Letter Automation Tool</p>
-      <h1>توليد خطابات تمديد الضمانات البنكية</h1>
-      <p class="lede">اختر ملف Excel، حلّ الغموض في أسماء البنوك والموردين، واطبع خطاباً رسمياً جاهزاً.</p>
-    </div>
-  </header>
+  <div id="root"></div>
 
-  <main class="app-main">
-    <section class="card">
-      <div class="card-head">
+  <script type="text/babel">
+    const { useState } = React;
+
+    const SAMPLE_BANKS = ["البنك العربي الوطني", "البنك الأهلي السعودي", "مصرف الراجحي"];
+    const SAMPLE_SUPPLIERS = ["شركة كير للتطوير", "شركة كير للتقنية", "شركة التوريد المتحدة"];
+
+    const normalizeKey = (key) => String(key || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+    const pick = (row, keys) => {
+      for (const k of keys) {
+        if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") return row[k];
+      }
+      return "";
+    };
+
+    function App() {
+      const [fileInfo, setFileInfo] = useState(null);
+      const [error, setError] = useState("");
+      const [warnings, setWarnings] = useState([]);
+      const [needsReview, setNeedsReview] = useState([]);
+      const [selectedId, setSelectedId] = useState(null);
+      const [modal, setModal] = useState({ open: false, type: null, record: null });
+      const hasFile = !!fileInfo;
+
+      const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setError("");
+        setWarnings([]);
+        setNeedsReview([]);
+        setSelectedId(null);
+        if (!file) {
+          setFileInfo(null);
+          return;
+        }
+        if (!file.name.toLowerCase().includes("xlsx") && !(file.type && file.type.includes("sheet"))) {
+          setError("الملف قد لا يكون XLSX، سيتم المتابعة لكن يُفضل رفع ملف Excel صحيح.");
+        }
+        if (file.size > 20 * 1024 * 1024) {
+          setError("تنبيه: حجم الملف يتجاوز 20MB. يفضل تقليل الصفوف.");
+        }
+        setFileInfo({ name: file.name, size: file.size, file });
+      };
+
+      const handleAnalyze = () => {
+        if (!fileInfo?.file || typeof XLSX === "undefined") {
+          setError("تعذر تحميل مكتبة XLSX أو لا يوجد ملف.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = new Uint8Array(evt.target.result);
+            const wb = XLSX.read(data, { type: "array" });
+            const sheet = wb.SheetNames[0];
+            if (!sheet) throw new Error("EMPTY");
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheet], { defval: "" });
+            const mapped = rows.map((row, idx) => {
+              const keys = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+              return {
+                id: idx + 1,
+                bankRaw: pick(keys, ["bank", "bank name", "اسم البنك", "البنك"]),
+                supplierRaw: pick(keys, ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد"]),
+                guaranteeNo: pick(keys, ["guarantee no", "guarantee", "bond_no", "رقم الضمان"]),
+                contractNo: pick(keys, ["contract", "contract no", "رقم العقد"]),
+                amount: pick(keys, ["amount", "value", "المبلغ"]),
+                dateRaw: pick(keys, ["date", "expiry", "renewal", "تاريخ الانتهاء"]),
+              };
+            });
+            const warnList = [];
+            mapped.forEach((r) => {
+              if (!r.bankRaw || !r.supplierRaw) warnList.push(`صف ${r.id}: بيانات ناقصة (بنك/مورد).`);
+            });
+            setWarnings(warnList);
+            setNeedsReview(mapped);
+            setSelectedId(mapped[0]?.id ?? null);
+          } catch (err) {
+            console.error(err);
+            setError("فشل تحليل الملف. تأكد من أنه XLSX صالح.");
+          }
+        };
+        reader.readAsArrayBuffer(fileInfo.file);
+      };
+
+      const selectedRecord = needsReview.find((r) => r.id === selectedId) || needsReview[0] || null;
+
+      const removeSelected = () => {
+        if (!selectedRecord) return;
+        const next = needsReview.filter((r) => r.id !== selectedRecord.id);
+        setNeedsReview(next);
+        setSelectedId(next[0]?.id ?? null);
+      };
+
+      const handleDecisionSave = () => {
+        removeSelected();
+        setModal({ open: false, type: null, record: null });
+      };
+
+      const alertCount = warnings.length + needsReview.length;
+
+      return (
         <div>
-          <h2>1) تحميل ملف الضمانات (Excel)</h2>
-          <p class="muted">مدعوم: ‎.xlsx بترميز UTF-8 — حد الحجم 1MB.</p>
+          <header className="app-header">
+            <div>
+              <p className="eyebrow">Guarantee Letter Automation Tool</p>
+              <h1>توليد خطابات تمديد الضمانات البنكية</h1>
+              <p className="lede">رفع ملف Excel → حل الغموض → خطاب جاهز للطباعة.</p>
+            </div>
+          </header>
+
+          <main className="app-main">
+            <section className="card">
+              <div className="card-head">
+                <div>
+                  <h2>1) تحميل ملف الضمانات (Excel)</h2>
+                  <p className="muted">مدعوم: ‎.xlsx بترميز UTF-8 — حد الحجم 20MB.</p>
+                </div>
+              </div>
+              <div className="field-group">
+                <input type="file" accept=".xlsx" onChange={handleFileChange} />
+                <button onClick={handleAnalyze}>بدء التحليل</button>
+              </div>
+              <p className="muted">{fileInfo ? `الملف المختار: ${fileInfo.name} — ${(fileInfo.size / 1024).toFixed(1)} KB` : ""}</p>
+              <p className="error">{error}</p>
+            </section>
+
+            <section className="card">
+              <div className="card-head">
+                <div>
+                  <h2>الأخطاء والتنبيهات</h2>
+                  <p className="muted">عرض مختصر للتنبيهات وعدد الصفوف الغامضة.</p>
+                </div>
+                <div className="chip muted">{alertCount} تنبيه</div>
+              </div>
+              <div className="warning-list">
+                {warnings.map((w, i) => <div key={i}>• {w}</div>)}
+                {needsReview.length ? <div>• {needsReview.length} صف يحتاج قرار</div> : null}
+                {!warnings.length && !needsReview.length ? <div>لا توجد تنبيهات.</div> : null}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="card-head">
+                <div>
+                  <h2>حلّ القرارات (البنك / المورد)</h2>
+                  <p className="muted">اختر صفاً غامضاً لتأكيد البنك والمورد.</p>
+                </div>
+                <div className="chip muted">{needsReview.length} صف غامض</div>
+              </div>
+              <div className="results">
+                {needsReview.length ? (
+                  <table className="mapping-table">
+                    <thead>
+                      <tr><th>#</th><th>البنك (خام)</th><th>المورد (خام)</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody>
+                      {needsReview.map((r, idx) => (
+                        <tr
+                          key={r.id}
+                          className={selectedId === r.id ? "selected-row" : ""}
+                          onClick={() => setSelectedId(r.id)}
+                        >
+                          <td>{idx + 1}</td>
+                          <td>{r.bankRaw || "-"}</td>
+                          <td>{r.supplierRaw || "-"}</td>
+                          <td className="text-amber">يحتاج تأكيد</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  "لا توجد صفوف غامضة."
+                )}
+              </div>
+              <div className="field-group">
+                <button onClick={() => setModal({ open: true, type: "decision", record: selectedRecord })} disabled={!selectedRecord}>
+                  حل الحالات المعلقة
+                </button>
+                <button onClick={() => setModal({ open: true, type: "letter", record: selectedRecord || needsReview[0] })} disabled={!selectedRecord && !needsReview.length}>
+                  معاينة خطاب
+                </button>
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="card-head">
+                <div>
+                  <h2>تفاصيل السجل</h2>
+                  <p className="muted">عرض معلومات الصف المحدد.</p>
+                </div>
+              </div>
+              <div className="results">
+                {selectedRecord ? (
+                  <div className="warning-list">
+                    <div><strong>رقم الضمان:</strong> {selectedRecord.guaranteeNo || "-"}</div>
+                    <div><strong>رقم العقد:</strong> {selectedRecord.contractNo || "-"}</div>
+                    <div><strong>البنك (خام):</strong> {selectedRecord.bankRaw || "-"}</div>
+                    <div><strong>المورد (خام):</strong> {selectedRecord.supplierRaw || "-"}</div>
+                  </div>
+                ) : (
+                  "لا يوجد سجل محدد."
+                )}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="card-head">
+                <div>
+                  <h2>معاينة الخطاب</h2>
+                  <p className="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
+                </div>
+                <button onClick={() => setModal({ open: true, type: "letter", record: selectedRecord || needsReview[0] })} disabled={!selectedRecord && !needsReview.length}>
+                  فتح المعاينة
+                </button>
+              </div>
+              <div className="results">اختر صفًا ثم افتح المعاينة.</div>
+            </section>
+          </main>
+
+          {modal.open && (
+            <div className="modal-overlay open" aria-hidden="false">
+              <div className="modal">
+                <div className="modal-header">
+                  <h3>{modal.type === "decision" ? "حل حالة غامضة" : "معاينة الخطاب"}</h3>
+                  <button onClick={() => setModal({ open: false, type: null, record: null })}>×</button>
+                </div>
+                <div className="modal-body">
+                  {modal.type === "decision" && modal.record && (
+                    <div className="space-y-2">
+                      <p className="muted">صف: {modal.record.id}</p>
+                      <div className="muted">البنك الخام: {modal.record.bankRaw || "-"}</div>
+                      <div className="muted">المورد الخام: {modal.record.supplierRaw || "-"}</div>
+                      <div className="space-y-1.5">
+                        <label className="muted">اختر البنك الرسمي:</label>
+                        <select className="mapping-select">
+                          {SAMPLE_BANKS.map((b) => <option key={b}>{b}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="muted">اختر المورد الرسمي:</label>
+                        <select className="mapping-select">
+                          {SAMPLE_SUPPLIERS.map((s) => <option key={s}>{s}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                  {modal.type === "letter" && (
+                    <div className="warning-list">
+                      <p>السادة / البنك الرسمي</p>
+                      <p>المحترمين،</p>
+                      <p>الموضوع: طلب تمديد الضمان البنكي رقم ({modal.record?.guaranteeNo || "-"})</p>
+                      <p>إشارة إلى الضمان البنكي الصادر منكم لصالح مستشفى الملك فيصل التخصصي، وبناءً على المعلومات التالية:</p>
+                      <ul>
+                        <li>رقم العقد: {modal.record?.contractNo || "-"}</li>
+                        <li>المبلغ: {modal.record?.amount || "-"}</li>
+                        <li>اسم المورد: {modal.record?.supplierRaw || "-"}</li>
+                      </ul>
+                      <p>نأمل منكم التكرم بتمديد تاريخ الضمان المشار إليه.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button onClick={() => setModal({ open: false, type: null, record: null })}>إغلاق</button>
+                  {modal.type === "decision" && <button className="primary" onClick={handleDecisionSave}>حفظ القرار</button>}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-      <div class="field-group">
-        <input type="file" id="excelInput" accept=".xlsx" />
-        <button id="analyzeBtn">بدء التحليل</button>
-      </div>
-      <p id="fileInfo" class="muted"></p>
-      <p id="errorMessage" class="error"></p>
-    </section>
+      );
+    }
 
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2>2) نتائج التحليل (مبدئية)</h2>
-          <p class="muted">سيتم عرض أول 10 صفوف بعد التطبيع وربط الأعمدة.</p>
-        </div>
-        <div id="summaryChip" class="chip muted">لم يبدأ التحليل</div>
-      </div>
-      <div id="resultsArea" class="results">
-        لم يتم بعد تحميل أي ملف.
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2>الأخطاء والتنبيهات</h2>
-          <p class="muted">عرض مختصر للتنبيهات وعدد الصفوف الغامضة.</p>
-        </div>
-        <div id="alertBadge" class="chip muted">0 تنبيه</div>
-      </div>
-      <div id="alertsList" class="warning-list"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2>حلّ القرارات (البنك / المورد)</h2>
-          <p class="muted">اختر صفاً غامضاً لتأكيد البنك والمورد.</p>
-        </div>
-        <div id="decisionBadge" class="chip muted">0 صف غامض</div>
-      </div>
-      <div id="decisionTableWrapper" class="results">لا توجد صفوف غامضة.</div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2>تفاصيل السجل</h2>
-          <p class="muted">عرض معلومات الصف المحدد.</p>
-        </div>
-      </div>
-      <div id="recordDetails" class="results">لا يوجد سجل محدد.</div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2>معاينة الخطاب</h2>
-          <p class="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
-        </div>
-        <button id="openLetterModalBtn" disabled>فتح المعاينة</button>
-      </div>
-      <div class="results">اضغط على صف ثم "فتح المعاينة".</div>
-    </section>
-  </main>
-
-  <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="modalTitle"></h3>
-        <button id="modalClose" aria-label="إغلاق">×</button>
-      </div>
-      <div id="modalBody" class="modal-body"></div>
-      <div id="modalFooter" class="modal-footer">
-        <button id="modalSecondary" class="secondary" style="display:none"></button>
-        <button id="modalPrimary" class="primary">موافق</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="app.js"></script>
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
