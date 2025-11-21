@@ -24,6 +24,14 @@ const pick = (row, keys) => {
   return "";
 };
 
+const pickLoose = (row, needles) => {
+  for (const [k, v] of Object.entries(row)) {
+    if (!v || String(v).trim() === "") continue;
+    if (needles.some((n) => k.includes(n))) return v;
+  }
+  return "";
+};
+
 const normalizeName = (input) => {
   if (!input) return "";
   return String(input).toLowerCase().trim().replace(/\s+/g, " ").replace(/\./g, "");
@@ -162,13 +170,18 @@ export default function App() {
         if (rawRows.length > MAX_ROWS) setWarnings((w) => [...w, `ملف كبير (${rawRows.length} صف). يفضل 100-150 كحد أقصى.`]);
         const mapped = rawRows.map((row, idx) => {
           const keys = Object.fromEntries(Object.entries(row).map(([k, v]) => [normalizeKey(k), v]));
+          const guaranteeVal =
+            pick(keys, ["guarantee no", "guarantee", "bond_no", "bond no", "bank guarantee number", "رقم الضمان"]) ||
+            pickLoose(keys, ["guarantee", "bond", "bg"]);
+          const contractVal =
+            pick(keys, ["contract", "contract no", "contract number", "contract #", "رقم العقد"]) ||
+            pickLoose(keys, ["contract", "عقد", "عقود"]);
           return {
             id: idx + 1,
             bankRaw: pick(keys, ["bank", "bank name", "اسم البنك", "البنك"]),
             supplierRaw: pick(keys, ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد", "contractor name"]),
-            guaranteeNo:
-              pick(keys, ["guarantee no", "guarantee", "bond_no", "bond no", "bank guarantee number", "رقم الضمان"]),
-            contractNo: pick(keys, ["contract", "contract no", "contract number", "contract #", "رقم العقد"]),
+            guaranteeNo: guaranteeVal,
+            contractNo: contractVal,
             amount: pick(keys, ["amount", "value", "amount sar", "المبلغ"]),
             dateRaw: pick(keys, ["date", "expiry", "renewal", "expiry date", "تاريخ الانتهاء"]),
           };
