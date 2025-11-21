@@ -9,7 +9,11 @@ const BANK_VARIANTS_KEY = "bgl_bank_variants";
 const SUPPLIER_VARIANTS_KEY = "bgl_supplier_variants";
 
 const normalizeKey = (key) =>
-  String(key || "").trim().toLowerCase().replace(/\s+/g, " ");
+  String(key || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_\-]+/g, " ")
+    .replace(/\s+/g, " ");
 
 const pick = (row, keys) => {
   for (const key of keys) {
@@ -161,11 +165,11 @@ export default function App() {
           return {
             id: idx + 1,
             bankRaw: pick(keys, ["bank", "bank name", "اسم البنك", "البنك"]),
-            supplierRaw: pick(keys, ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد"]),
-            guaranteeNo: pick(keys, ["guarantee no", "guarantee", "bond_no", "رقم الضمان"]),
-            contractNo: pick(keys, ["contract", "contract no", "رقم العقد"]),
-            amount: pick(keys, ["amount", "value", "المبلغ"]),
-            dateRaw: pick(keys, ["date", "expiry", "renewal", "تاريخ الانتهاء"]),
+            supplierRaw: pick(keys, ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد", "contractor name"]),
+            guaranteeNo: pick(keys, ["guarantee no", "guarantee", "bond_no", "bond no", "bank guarantee number", "رقم الضمان"]),
+            contractNo: pick(keys, ["contract", "contract no", "contract number", "contract #", "رقم العقد"]),
+            amount: pick(keys, ["amount", "value", "amount sar", "المبلغ"]),
+            dateRaw: pick(keys, ["date", "expiry", "renewal", "expiry date", "تاريخ الانتهاء"]),
           };
         });
         const enriched = mapped.map((r) => {
@@ -299,8 +303,8 @@ export default function App() {
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>البنك (خام)</th>
-                    <th>المورد (خام)</th>
+                    <th>البنك</th>
+                    <th>المورد</th>
                     <th>الحالة</th>
                   </tr>
                 </thead>
@@ -312,8 +316,8 @@ export default function App() {
                       onClick={() => setSelectedId(r.id)}
                     >
                       <td>{idx + 1}</td>
-                      <td>{r.bankRaw || "-"}</td>
-                      <td>{r.supplierRaw || "-"}</td>
+                      <td>{r.bankDisplay || r.bankRaw || "-"}</td>
+                      <td>{r.supplierDisplay || r.supplierRaw || "-"}</td>
                       <td className={r.needsDecision ? "text-amber" : "text-success"}>
                         {r.needsDecision ? "يحتاج تأكيد" : "جاهز"}
                       </td>
@@ -481,8 +485,8 @@ function LetterPreview({ record }) {
   const bankName = record?.bankDisplay || record?.bankOfficial || record?.bankRaw || "البنك الرسمي";
   const supplierName =
     record?.supplierDisplay || record?.supplierOfficial || record?.supplierRaw || "المورد";
-  const guaranteeNo = record?.guaranteeNo || "-";
-  const contractNo = record?.contractNo || "-";
+  const guaranteeNo = record?.guaranteeNo || record?.guarantee_no || "-";
+  const contractNo = record?.contractNo || record?.contract_no || "-";
   const amount = record?.amount || "-";
 
   return (
