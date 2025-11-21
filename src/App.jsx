@@ -6,6 +6,7 @@ import { PreviewPanel } from "./panels/PreviewPanel";
 import { BANK_DICTIONARY, BANK_VARIANTS_KEY } from "./constants/banks";
 import {
   SUPPLIER_OPTIONS,
+  SUPPLIERS_CANONICAL,
   SUPPLIER_VARIANTS_SEEDED,
   SUPPLIER_OFFICIAL_LOOKUP,
 } from "./constants/suppliers";
@@ -79,11 +80,16 @@ export default function App() {
       const mapped = mapRows(rawRows);
       const enriched = mapped.map((r) => {
         const bankRes = resolveBank(r.bankRaw, BANK_DICTIONARY, bankVariants, FUZZY_BANK_AUTO);
-      const supRes = resolveSupplierValue(r.supplierRaw, supplierVariants, SUPPLIER_OPTIONS, {
-        fuzzyAuto: FUZZY_SUPPLIER_AUTO,
-        fuzzySuggest: FUZZY_SUPPLIER_SUGGEST,
-      });
-      return {
+        const supRes = resolveSupplierValue(
+          r.supplierRaw,
+          supplierVariants,
+          SUPPLIERS_CANONICAL.length ? SUPPLIERS_CANONICAL : SUPPLIER_OPTIONS,
+          {
+            fuzzyAuto: FUZZY_SUPPLIER_AUTO,
+            fuzzySuggest: FUZZY_SUPPLIER_SUGGEST,
+          }
+        );
+        return {
           ...r,
           bankDisplay: bankRes.official || r.bankRaw,
           supplierDisplay: supRes.official || r.supplierRaw,

@@ -169,7 +169,25 @@ export const resolveSupplierValue = (
   }
 
   const normalizedRaw = normalizeName(raw);
-  const normalizedOfficialMap = new Map(officialList.map((o) => [normalizeName(o), o]));
+  const useCanonicalObjects =
+    officialList &&
+    officialList.length &&
+    typeof officialList[0] === "object" &&
+    Object.prototype.hasOwnProperty.call(officialList[0], "canonical");
+
+  const canonicalEntries = useCanonicalObjects
+    ? officialList.map((s) => ({
+        canonical: s.canonical,
+        normalized: s.normalized || normalizeName(s.canonical),
+        normalizedAliases: (s.normalizedAliases || s.aliases || []).map((a) => normalizeName(a)),
+      }))
+    : officialList.map((o) => ({
+        canonical: o,
+        normalized: normalizeName(o),
+        normalizedAliases: [],
+      }));
+
+  const normalizedOfficialMap = new Map(canonicalEntries.map((c) => [c.normalized, c.canonical]));
 
   if (normalizedOfficialMap.has(normalizedRaw)) {
     return {
@@ -179,6 +197,19 @@ export const resolveSupplierValue = (
       probability: 1,
       source: "official-exact",
     };
+  }
+
+  if (useCanonicalObjects) {
+    const aliasHit = canonicalEntries.find((c) => c.normalizedAliases?.includes(normalizedRaw));
+    if (aliasHit) {
+      return {
+        status: "auto",
+        official: aliasHit.canonical,
+        fuzzySuggestion: null,
+        probability: 0.98,
+        source: "alias-exact",
+      };
+    }
   }
 
   const variantRec = asVariantRecord(variantsDict[normalizedRaw]);
@@ -207,9 +238,9 @@ export const resolveSupplierValue = (
   }
 
   let best = { score: 0, official: null };
-  for (const official of officialList) {
-    const score = fuzzySimilarity(normalizedRaw, normalizeName(official));
-    if (score > best.score) best = { score, official };
+  for (const entry of canonicalEntries) {
+    const score = fuzzySimilarity(normalizedRaw, entry.normalized);
+    if (score > best.score) best = { score, official: entry.canonical };
   }
 
   if (best.official && best.score >= fuzzyAuto) {
