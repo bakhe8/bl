@@ -3,20 +3,24 @@
 ## البيئة المقترحة
 - نظام التشغيل: Windows (أو أي نظام يحوي متصفح حديث).
 - المتصفح: Chrome أو Edge.
-- الاتصال: غير مطلوب؛ التطوير يتم عبر خادم Vite محلي فقط لتشغيل ES Modules.
+- الاتصال: غير مطلوب؛ التطوير يتم عبر خادم Vite محلي ثابت (5173).
 
-## خطوات التشغيل المبدئية (Vite)
+## خطوات التشغيل المبدئية
 1) استنسخ المستودع محلياً.
 2) ثبّت التبعيات: `npm install`.
-3) شغّل السرفر: `npm run dev` (مهيأ على `http://localhost:5173/` مع `strictPort: true`).
+3) شغّل الخادم بأمر واحد: `npm start` (يستدعي `run-dev.ps1` لإيقاف أي Vite قديم ثم تشغيل Vite على 5173).
 4) افتح المتصفح على `http://localhost:5173/`.
-5) حمّل ملف Excel للضمانات عبر الواجهة، حلّ الغموض، ثم اطبع بصيغة PDF من المتصفح.
+5) حمّل ملف Excel، حلّ الغموض، ثم اطبع بصيغة PDF من المتصفح.
+
+### سكربت التشغيل (أوتوماتيكياً)
+- `run-dev.ps1` في جذر المشروع:
+  - يبحث عن عمليات Vite فقط ويغلقها.
+  - يشغّل `npm run dev` على منفذ ثابت 5173 (`strictPort: true`).
 
 ### ملاحظات تشغيل
-- لا تستخدم Live Server أو python server؛ استخدم Vite فقط.
-- إذا ظهر خطأ "Port 5173 is in use" أوقف أي عمليات Node: `Get-Process node | Stop-Process -Force` ثم أعد التشغيل.
-- يمكن تشغيل Vite في نافذة مستقلة عبر PowerShell:
-  `Start-Process -FilePath "npm" -ArgumentList @("run","dev") -WindowStyle Minimized`
+- لا تستخدم Live Server أو python server؛ Vite فقط.
+- إذا ظهر "Port 5173 is in use" شغّل `npm start` مجدداً (السكربت يغلق Vite القديم).
+- لتحديث المنفذ غيّر `port` في `vite.config.js` و/أو سكربت `run-dev.ps1`.
 
 ## الاعتمادات
 - تستخدم React/Vite مع SheetJS لقراءة ملفات Excel.

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File run-dev.ps1",
     "dev": "vite --host --port 5173 --strictPort --clearScreen false",
     "build": "vite build",
     "preview": "vite preview"
