@@ -406,20 +406,7 @@ export default function App() {
                 </div>
               )}
               {modal.type === "letter" && (
-                <div className="warning-list">
-                  <p>السادة / البنك الرسمي</p>
-                  <p>المحترمين،</p>
-                  <p>
-                    الموضوع: طلب تمديد الضمان البنكي رقم ({modal.record?.guaranteeNo || "-"
-                    }) والعائد للعقد رقم ({modal.record?.contractNo || "-"})
-                  </p>
-                  <p>إشارة إلى الضمان البنكي الصادر منكم لصالح مستشفى الملك فيصل التخصصي، وبناءً على المعلومات التالية:</p>
-                  <ul>
-                    <li>المبلغ: {modal.record?.amount || "-"}</li>
-                    <li>اسم المورد: {modal.record?.supplierDisplay || modal.record?.supplierOfficial || modal.record?.supplierRaw || "-"}</li>
-                  </ul>
-                  <p>نأمل منكم التكرم بتمديد تاريخ الضمان المشار إليه.</p>
-                </div>
+                <LetterPreview record={modal.record} />
               )}
             </div>
             <div className="modal-footer">
@@ -486,6 +473,31 @@ function DecisionSelector({ label, options, defaultValue, onSelect }) {
           if (e.target.value.trim()) onSelect(e.target.value.trim());
         }}
       />
+    </div>
+  );
+}
+
+function LetterPreview({ record }) {
+  const bankName = record?.bankDisplay || record?.bankOfficial || record?.bankRaw || "البنك الرسمي";
+  const supplierName =
+    record?.supplierDisplay || record?.supplierOfficial || record?.supplierRaw || "المورد";
+  const guaranteeNo = record?.guaranteeNo || "-";
+  const contractNo = record?.contractNo || "-";
+  const amount = record?.amount || "-";
+
+  return (
+    <div className="warning-list">
+      <p>السادة / {bankName}</p>
+      <p>المحترمين،</p>
+      <p>
+        الموضوع: طلب تمديد الضمان البنكي رقم ({guaranteeNo}) والعائد للعقد رقم ({contractNo})
+      </p>
+      <p>إشارة إلى الضمان البنكي الصادر منكم لصالح مستشفى الملك فيصل التخصصي، وبناءً على المعلومات التالية:</p>
+      <ul>
+        <li>المبلغ: {amount}</li>
+        <li>اسم المورد: {supplierName}</li>
+      </ul>
+      <p>نأمل منكم التكرم بتمديد تاريخ الضمان المشار إليه.</p>
     </div>
   );
 }
