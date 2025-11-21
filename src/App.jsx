@@ -166,7 +166,8 @@ export default function App() {
             id: idx + 1,
             bankRaw: pick(keys, ["bank", "bank name", "اسم البنك", "البنك"]),
             supplierRaw: pick(keys, ["supplier", "vendor", "اسم المورد", "المورد", "المتعهد", "contractor name"]),
-            guaranteeNo: pick(keys, ["guarantee no", "guarantee", "bond_no", "bond no", "bank guarantee number", "رقم الضمان"]),
+            guaranteeNo:
+              pick(keys, ["guarantee no", "guarantee", "bond_no", "bond no", "bank guarantee number", "رقم الضمان"]),
             contractNo: pick(keys, ["contract", "contract no", "contract number", "contract #", "رقم العقد"]),
             amount: pick(keys, ["amount", "value", "amount sar", "المبلغ"]),
             dateRaw: pick(keys, ["date", "expiry", "renewal", "expiry date", "تاريخ الانتهاء"]),
@@ -179,6 +180,8 @@ export default function App() {
             ...r,
             bankDisplay: bankRes.official || r.bankRaw,
             supplierDisplay: supRes.official || r.supplierRaw,
+            guaranteeNumber: r.guaranteeNo || r.guarantee_no || r.guarantee_number || "",
+            contractNumber: r.contractNo || r.contract_no || r.contract_number || "",
             bankStatus: bankRes.status,
             bankOfficial: bankRes.official,
             bankFuzzySuggestion: bankRes.fuzzySuggestion,
@@ -350,10 +353,12 @@ export default function App() {
             {selectedRecord ? (
               <div className="warning-list">
                 <div>
-                  <strong>رقم الضمان:</strong> {selectedRecord.guaranteeNo || "-"}
+                  <strong>رقم الضمان:</strong>{" "}
+                  {selectedRecord.guaranteeNumber || selectedRecord.guaranteeNo || selectedRecord.guarantee_no || "-"}
                 </div>
                 <div>
-                  <strong>رقم العقد:</strong> {selectedRecord.contractNo || "-"}
+                  <strong>رقم العقد:</strong>{" "}
+                  {selectedRecord.contractNumber || selectedRecord.contractNo || selectedRecord.contract_no || "-"}
                 </div>
                 <div>
                   <strong>البنك:</strong> {selectedRecord.bankDisplay || selectedRecord.bankRaw || "-"}
@@ -485,8 +490,8 @@ function LetterPreview({ record }) {
   const bankName = record?.bankDisplay || record?.bankOfficial || record?.bankRaw || "البنك الرسمي";
   const supplierName =
     record?.supplierDisplay || record?.supplierOfficial || record?.supplierRaw || "المورد";
-  const guaranteeNo = record?.guaranteeNo || record?.guarantee_no || "-";
-  const contractNo = record?.contractNo || record?.contract_no || "-";
+  const guaranteeNo = record?.guaranteeNumber || record?.guaranteeNo || record?.guarantee_no || "-";
+  const contractNo = record?.contractNumber || record?.contractNo || record?.contract_no || "-";
   const amount = record?.amount || "-";
 
   return (
