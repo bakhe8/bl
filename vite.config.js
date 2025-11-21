@@ -1,6 +1,7 @@
 export default {
   server: {
-    port: 5100,
-    strictPort: false,
+    host: true,
+    port: 5173,
+    strictPort: true,
   },
 };
