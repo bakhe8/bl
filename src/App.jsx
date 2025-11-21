@@ -5,6 +5,9 @@ const MAX_ROWS = 150;
 const BANK_OPTIONS = ["البنك العربي الوطني", "البنك الأهلي السعودي", "مصرف الراجحي", "بنك الرياض"];
 const SUPPLIER_OPTIONS = ["شركة كير للتطوير", "شركة كير للتقنية", "شركة التوريد المتحدة"];
 
+const BANK_VARIANTS_KEY = "bgl_bank_variants";
+const SUPPLIER_VARIANTS_KEY = "bgl_supplier_variants";
+
 const normalizeKey = (key) =>
   String(key || "").trim().toLowerCase().replace(/\s+/g, " ");
 
@@ -17,16 +20,103 @@ const pick = (row, keys) => {
   return "";
 };
 
+const normalizeName = (input) => {
+  if (!input) return "";
+  return String(input).toLowerCase().trim().replace(/\s+/g, " ").replace(/\./g, "");
+};
+
+const loadVariants = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+};
+
+const saveVariants = (key, dict) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(dict));
+  } catch {
+    /* ignore */
+  }
+};
+
+const exactMatch = (raw, variantsDict) => {
+  const n = normalizeName(raw);
+  if (!n) return null;
+  return variantsDict[n] || null;
+};
+
+const simpleSimilarity = (a, b) => {
+  if (!a || !b) return 0;
+  const s1 = normalizeName(a);
+  const s2 = normalizeName(b);
+  const maxLen = Math.max(s1.length, s2.length);
+  if (maxLen === 0) return 1;
+  let same = 0;
+  for (let i = 0; i < Math.min(s1.length, s2.length); i++) {
+    if (s1[i] === s2[i]) same++;
+  }
+  return same / maxLen;
+};
+
+const fuzzyMatch = (raw, variantsDict, threshold = 0.9) => {
+  const keys = Object.keys(variantsDict);
+  if (!keys.length) return null;
+  let bestKey = null;
+  let bestScore = 0;
+  for (const key of keys) {
+    const score = simpleSimilarity(raw, key);
+    if (score > bestScore) {
+      bestScore = score;
+      bestKey = key;
+    }
+  }
+  if (bestScore >= threshold) {
+    return { key: bestKey, official: variantsDict[bestKey], score: bestScore };
+  }
+  return null;
+};
+
+const resolveValue = (raw, variantsDict, { enableFuzzy = true, fuzzyThreshold = 0.9 } = {}) => {
+  if (!raw || !String(raw).trim()) {
+    return { status: "manual", official: null, fuzzySuggestion: null };
+  }
+  const exact = exactMatch(raw, variantsDict);
+  if (exact) return { status: "auto", official: exact, fuzzySuggestion: null };
+  if (enableFuzzy) {
+    const fuzzy = fuzzyMatch(raw, variantsDict, fuzzyThreshold);
+    if (fuzzy) {
+      return { status: "fuzzy", official: fuzzy.official, fuzzySuggestion: fuzzy.official };
+    }
+  }
+  return { status: "manual", official: null, fuzzySuggestion: null };
+};
+
+const learnVariant = (raw, official, variantsDict, key) => {
+  const n = normalizeName(raw);
+  if (!n || !official) return variantsDict;
+  if (variantsDict[n] && variantsDict[n] === official) return variantsDict;
+  const updated = { ...variantsDict, [n]: official };
+  saveVariants(key, updated);
+  return updated;
+};
+
 export default function App() {
   const [fileInfo, setFileInfo] = useState(null);
   const [error, setError] = useState("");
   const [warnings, setWarnings] = useState([]);
-  const [rows, setRows] = useState([]);
+  const [records, setRecords] = useState([]);
   const [needsReview, setNeedsReview] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [modal, setModal] = useState({ open: false, type: null, record: null });
+  const [bankVariants, setBankVariants] = useState(() => loadVariants(BANK_VARIANTS_KEY));
+  const [supplierVariants, setSupplierVariants] = useState(() => loadVariants(SUPPLIER_VARIANTS_KEY));
 
-  const selectedRecord = needsReview.find((r) => r.id === selectedId) || needsReview[0] || null;
+  const selectedRecord =
+    needsReview.find((r) => r.id === selectedId) || records.find((r) => r.id === selectedId) || needsReview[0] || null;
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -75,9 +165,24 @@ export default function App() {
             dateRaw: pick(keys, ["date", "expiry", "renewal", "تاريخ الانتهاء"]),
           };
         });
-        setRows(mapped);
-        setNeedsReview(mapped);
-        setSelectedId(mapped[0]?.id ?? null);
+        const enriched = mapped.map((r) => {
+          const bankRes = resolveValue(r.bankRaw, bankVariants, { enableFuzzy: true, fuzzyThreshold: 0.9 });
+          const supRes = resolveValue(r.supplierRaw, supplierVariants, { enableFuzzy: true, fuzzyThreshold: 0.9 });
+          return {
+            ...r,
+            bankStatus: bankRes.status,
+            bankOfficial: bankRes.official,
+            bankFuzzySuggestion: bankRes.fuzzySuggestion,
+            supplierStatus: supRes.status,
+            supplierOfficial: supRes.official,
+            supplierFuzzySuggestion: supRes.fuzzySuggestion,
+            needsDecision: bankRes.status !== "auto" || supRes.status !== "auto",
+          };
+        });
+        const reviewList = enriched.filter((r) => r.needsDecision);
+        setRecords(enriched);
+        setNeedsReview(reviewList);
+        setSelectedId(reviewList[0]?.id ?? null);
       } catch (err) {
         console.error(err);
         setError("فشل تحليل الملف. تأكد من أنه XLSX صالح.");
@@ -95,6 +200,9 @@ export default function App() {
     if (!selectedRecord) return;
     const next = needsReview.filter((r) => r.id !== selectedRecord.id);
     setNeedsReview(next);
+    setRecords((recs) =>
+      recs.map((r) => (r.id === selectedRecord.id ? { ...r, needsDecision: false } : r))
+    );
     setSelectedId(next[0]?.id ?? null);
   };
 
@@ -104,7 +212,7 @@ export default function App() {
   };
 
   const openLetter = () => {
-    const rec = selectedRecord || needsReview[0] || rows[0];
+    const rec = selectedRecord || needsReview[0] || records[0];
     if (!rec) return;
     setModal({ open: true, type: "letter", record: rec });
   };
@@ -201,7 +309,7 @@ export default function App() {
             <button onClick={openDecision} disabled={!selectedRecord}>
               حل الحالات المعلقة
             </button>
-            <button onClick={openLetter} disabled={!selectedRecord && !needsReview.length && !rows.length}>
+            <button onClick={openLetter} disabled={!selectedRecord && !needsReview.length && !records.length}>
               معاينة خطاب
             </button>
           </div>
@@ -242,7 +350,7 @@ export default function App() {
               <h2>معاينة الخطاب</h2>
               <p className="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
             </div>
-            <button onClick={openLetter} disabled={!selectedRecord && !needsReview.length && !rows.length}>
+            <button onClick={openLetter} disabled={!selectedRecord && !needsReview.length && !records.length}>
               فتح المعاينة
             </button>
           </div>
@@ -263,22 +371,18 @@ export default function App() {
                   <p className="muted">صف: {modal.record.id}</p>
                   <div className="muted">البنك الخام: {modal.record.bankRaw || "-"}</div>
                   <div className="muted">المورد الخام: {modal.record.supplierRaw || "-"}</div>
-                  <div className="space-y-1.5">
-                    <label className="muted">اختر البنك الرسمي:</label>
-                    <select className="mapping-select">
-                      {BANK_OPTIONS.map((b) => (
-                        <option key={b}>{b}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="muted">اختر المورد الرسمي:</label>
-                    <select className="mapping-select">
-                      {SUPPLIER_OPTIONS.map((s) => (
-                        <option key={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <DecisionSelector
+                    label="اختر البنك الرسمي:"
+                    options={BANK_OPTIONS}
+                    defaultValue={modal.record?.bankFuzzySuggestion || ""}
+                    onSelect={(val) => setModal((m) => ({ ...m, record: { ...m.record, bankOfficial: val } }))}
+                  />
+                  <DecisionSelector
+                    label="اختر المورد الرسمي:"
+                    options={SUPPLIER_OPTIONS}
+                    defaultValue={modal.record?.supplierFuzzySuggestion || ""}
+                    onSelect={(val) => setModal((m) => ({ ...m, record: { ...m.record, supplierOfficial: val } }))}
+                  />
                 </div>
               )}
               {modal.type === "letter" && (
@@ -301,7 +405,35 @@ export default function App() {
             <div className="modal-footer">
               <button onClick={() => setModal({ open: false, type: null, record: null })}>إغلاق</button>
               {modal.type === "decision" && (
-                <button className="primary" onClick={handleDecisionSave}>
+                <button
+                  className="primary"
+                  onClick={() => {
+                    if (!modal.record?.bankOfficial || !modal.record?.supplierOfficial) return;
+                    setBankVariants((dict) =>
+                      learnVariant(modal.record.bankRaw, modal.record.bankOfficial, dict, BANK_VARIANTS_KEY)
+                    );
+                    setSupplierVariants((dict) =>
+                      learnVariant(modal.record.supplierRaw, modal.record.supplierOfficial, dict, SUPPLIER_VARIANTS_KEY)
+                    );
+                    setRecords((recs) =>
+                      recs.map((r) =>
+                        r.id === modal.record.id
+                          ? {
+                              ...r,
+                              bankStatus: "auto",
+                              bankOfficial: modal.record.bankOfficial,
+                              supplierStatus: "auto",
+                              supplierOfficial: modal.record.supplierOfficial,
+                              needsDecision: false,
+                            }
+                          : r
+                      )
+                    );
+                    setNeedsReview((list) => list.filter((r) => r.id !== modal.record.id));
+                    setSelectedId((id) => (id === modal.record.id ? null : id));
+                    setModal({ open: false, type: null, record: null });
+                  }}
+                >
                   حفظ القرار
                 </button>
               )}
@@ -309,6 +441,31 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DecisionSelector({ label, options, defaultValue, onSelect }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="muted">{label}</label>
+      <select className="mapping-select" defaultValue={defaultValue} onChange={(e) => onSelect(e.target.value)}>
+        <option value="">اختر...</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+        <option value="__other">أخرى...</option>
+      </select>
+      <input
+        type="text"
+        className="mapping-select"
+        placeholder="إضافة قيمة جديدة"
+        onBlur={(e) => {
+          if (e.target.value.trim()) onSelect(e.target.value.trim());
+        }}
+      />
     </div>
   );
 }
