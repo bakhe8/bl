@@ -16,9 +16,9 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
   const statusInfo = (r) => {
     const bankAuto = r.bankStatus === "auto";
     const supplierAuto = r.supplierStatus === "auto";
-    if (!bankAuto && !supplierAuto) return { label: "يحتاج تأكيد البنك والمورد", className: "text-amber" };
-    if (!bankAuto && supplierAuto) return { label: "يحتاج تأكيد البنك فقط", className: "text-blue" };
-    if (bankAuto && !supplierAuto) return { label: "يحتاج تأكيد المورد فقط", className: "text-purple" };
+    if (!bankAuto && !supplierAuto) return { label: "البنك والمورد", className: "text-amber" };
+    if (!bankAuto && supplierAuto) return { label: "البنك", className: "text-blue" };
+    if (bankAuto && !supplierAuto) return { label: "المورد", className: "text-purple" };
     return { label: "جاهز", className: "text-success" };
   };
 
@@ -31,39 +31,44 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
         </div>
         <div className="chip muted">{records.filter((r) => r.needsDecision).length} صف غامض</div>
       </div>
-      <div className="results">
-        {records.length ? (
-          <table className="mapping-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>البنك</th>
-                <th>المورد</th>
-                <th>الحالة</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((r, idx) => {
-                const isSelected = selectedId === r.id;
-                const status = statusInfo(r);
-                const bankValue = getDraftBank(r);
-                const supplierValue = getDraftSupplier(r);
-                return (
-                  <React.Fragment key={r.id}>
-                    <tr
-                      className={`${isSelected ? "selected-row" : ""} ${!r.needsDecision ? "resolved-row" : ""}`}
-                      onClick={() => onSelect(r.id)}
-                    >
-                      <td>{idx + 1}</td>
-                      <td>{r.bankDisplay || r.bankRaw || "-"}</td>
-                      <td>{r.supplierDisplay || r.supplierRaw || "-"}</td>
-                      <td className={status.className}>{status.label}</td>
-                    </tr>
+      {records.length ? (
+        <table className="mapping-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>البنك</th>
+              <th>المورد</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((r, idx) => {
+              const isSelected = selectedId === r.id;
+              const status = statusInfo(r);
+              const bankValue = getDraftBank(r);
+              const supplierValue = getDraftSupplier(r);
+              const needsBank = r.bankStatus !== "auto";
+              const needsSupplier = r.supplierStatus !== "auto";
+              const bankOfficial = needsBank ? bankValue.trim() : r.bankDisplay || r.bankOfficial || r.bankRaw || "";
+              const supplierOfficial = needsSupplier ? supplierValue.trim() : r.supplierDisplay || r.supplierOfficial || r.supplierRaw || "";
+              const canSave = (!needsBank || bankOfficial) && (!needsSupplier || supplierOfficial);
+              return (
+                <React.Fragment key={r.id}>
+                  <tr
+                    className={`${isSelected ? "selected-row" : ""} ${!r.needsDecision ? "resolved-row" : ""}`}
+                    onClick={() => onSelect(r.id)}
+                  >
+                    <td>{idx + 1}</td>
+                    <td>{r.bankDisplay || r.bankRaw || "-"}</td>
+                    <td>{r.supplierDisplay || r.supplierRaw || "-"}</td>
+                    <td className={status.className}>{status.label}</td>
+                  </tr>
                     {isSelected && r.needsDecision ? (
                       <tr className="inline-row">
                         <td colSpan={4}>
                           <div className="inline-decision">
                             <div className="inline-grid">
+                            {needsBank ? (
                               <div className="inline-group">
                                 <label className="muted">اختر البنك الرسمي:</label>
                                 <select
@@ -89,6 +94,8 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
                                   onChange={(e) => onDraftChange((d) => ({ ...d, bank: e.target.value }))}
                                 />
                               </div>
+                            ) : null}
+                            {needsSupplier ? (
                               <div className="inline-group">
                                 <label className="muted">اختر المورد الرسمي:</label>
                                 <select
@@ -114,29 +121,29 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
                                   onChange={(e) => onDraftChange((d) => ({ ...d, supplier: e.target.value }))}
                                 />
                               </div>
-                            </div>
-                            <div className="inline-actions">
-                              <button
-                                className="primary"
-                                onClick={() => onDecision(bankValue.trim(), supplierValue.trim())}
-                                disabled={!bankValue.trim() || !supplierValue.trim()}
-                              >
-                                حفظ القرار
-                              </button>
-                            </div>
+                            ) : null}
                           </div>
-                        </td>
-                      </tr>
-                    ) : null}
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        ) : (
-          "لا توجد سجلات."
-        )}
-      </div>
+                          <div className="inline-actions">
+                            <button
+                              className="primary"
+                              onClick={() => onDecision(bankOfficial, supplierOfficial)}
+                              disabled={!canSave}
+                            >
+                              حفظ القرار
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      ) : (
+        <div className="muted">لا توجد سجلات.</div>
+      )}
     </section>
   );
 }

@@ -179,34 +179,44 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <section className="card">
-          <div className="card-head">
-            <div>
-              <h2>1) تحميل ملف الضمانات (Excel)</h2>
-              <p className="muted">مدعوم: ‎.xlsx بترميز UTF-8 — حد الحجم 20MB.</p>
+        <div className="top-grid">
+          <section className="card">
+            <div className="card-head">
+              <div>
+                <h2>1) رفع ملف Excel</h2>
+                <p className="muted">الصيغة المدعومة: ‎.xlsx بترميز UTF-8 – الحجم الأقصى 20MB.</p>
+                <p className="muted">اختر الملف ثم اضغط “بدء التحليل” لعرض السطور الغامضة.</p>
+              </div>
             </div>
-          </div>
-          <div className="field-group">
-            <input type="file" accept=".xlsx" onChange={handleFileChange} />
-            <button onClick={handleAnalyze}>بدء التحليل</button>
-          </div>
-          <p className="muted">
-            {fileInfo ? `الملف المختار: ${fileInfo.name} — ${(fileInfo.size / 1024).toFixed(1)} KB` : ""}
-          </p>
-          <p className="error">{error}</p>
-        </section>
+            <form className="field-inline" onSubmit={(e) => { e.preventDefault(); handleAnalyze(); }}>
+              <input type="file" accept=".xlsx" onChange={handleFileChange} />
+              <button type="submit">بدء التحليل</button>
+            </form>
+            <p className="muted">
+              {fileInfo ? `الملف المختار: ${fileInfo.name} — ${(fileInfo.size / 1024).toFixed(1)} KB` : "لم يتم اختيار ملف بعد."}
+            </p>
+            <p className="error">{error}</p>
+          </section>
 
-        <AlertsPanel warnings={warnings} needsReviewCount={needsReview.length} />
-        <DecisionsPanel
-          records={records}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          decisionDraft={decisionDraft}
-          onDraftChange={setDecisionDraft}
-          onDecision={handleDecisionSave}
-        />
-        <RecordDetailsPanel record={selectedRecord} />
-        <PreviewPanel record={selectedRecord || records[0]} />
+          <AlertsPanel warnings={warnings} needsReviewCount={needsReview.length} />
+        </div>
+
+        <div className="layout-grid">
+          <div className="left-column">
+            <DecisionsPanel
+              records={records}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              decisionDraft={decisionDraft}
+              onDraftChange={setDecisionDraft}
+              onDecision={handleDecisionSave}
+            />
+          </div>
+          <div className="right-column">
+            <RecordDetailsPanel record={selectedRecord} />
+            <PreviewPanel record={selectedRecord || records[0]} />
+          </div>
+        </div>
       </main>
     </div>
   );
