@@ -3,6 +3,7 @@ import { ExpandedDecisionRow } from "../components/ExpandedDecisionRow";
 import { BANK_OPTIONS } from "../constants/banks";
 import { SUPPLIER_OPTIONS } from "../constants/suppliers";
 import { normalizeName } from "../logic/normalization";
+import { SupplierTypeahead } from "../components/SupplierTypeahead";
 
 export function DecisionsPanel({
   records,
@@ -148,45 +149,13 @@ export function DecisionsPanel({
                             ) : null}
                             {needsSupplier ? (
                               <div className="inline-group">
-                                <label className="muted">اختر المورد الرسمي:</label>
-                                <select
-                                  className="mapping-select"
+                                <label className="muted">اختر المورد الرسمي (اقتراحات ذكية):</label>
+                                <SupplierTypeahead
                                   value={supplierValue}
-                                  onChange={(e) => onDraftChange((d) => ({ ...d, supplier: e.target.value }))}
-                                >
-                                  <option value="">اختر...</option>
-                                  {[supplierValue, ...supplierChoices]
-                                    .filter(Boolean)
-                                    .filter((v, i, arr) => arr.indexOf(v) === i)
-                                    .map((opt) => (
-                                      <option key={opt} value={opt}>
-                                        {opt}
-                                      </option>
-                                    ))}
-                                </select>
-                                <input
-                                  type="text"
-                                  className="mapping-select"
-                                  placeholder="أو اكتب الاسم الرسمي بالعربية"
-                                  value={supplierValue}
-                                  onChange={(e) => onDraftChange((d) => ({ ...d, supplier: e.target.value }))}
+                                  onChange={(val) => onDraftChange((d) => ({ ...d, supplier: val }))}
+                                  supplierVariants={supplierVariants}
+                                  suppliersCanonical={suppliersCanonical}
                                 />
-                                {(() => {
-                                  const normDraft = normalizeName(supplierValue || r.supplierFuzzySuggestion || r.supplierRaw || "");
-                                  const canonicalMatch =
-                                    suppliersCanonical.find(
-                                      (c) => normalizeName(c.canonical) === normDraft
-                                    ) ||
-                                    suppliersCanonical.find(
-                                      (c) => (c.normalized || normalizeName(c.canonical)) === normDraft
-                                    );
-                                  if (!canonicalMatch || !(canonicalMatch.aliases || []).length) return null;
-                                  return (
-                                    <div className="muted small-text">
-                                      أسماء معروفة: {(canonicalMatch.aliases || []).join(" • ")}
-                                    </div>
-                                  );
-                                })()}
                               </div>
                             ) : null}
                           </div>
