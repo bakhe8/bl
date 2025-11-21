@@ -1,21 +1,439 @@
-﻿{
-  "version": 1,
-  "updatedAt": "2025-01-01",
+{
+  "version": 3,
+  "updatedAt": "2025-11-21",
   "banks": [
     {
-      "id": "bank_001",
-      "official": "البنك العربي الوطني",
-      "short": ["ANB", "ARAB NATIONAL BANK"]
-    },
-    {
-      "id": "bank_002",
-      "official": "البنك الأهلي السعودي",
-      "short": ["SNB", "SAUDI NATIONAL BANK"]
-    },
-    {
-      "id": "bank_003",
       "official": "مصرف الراجحي",
-      "short": ["RAJHI", "AL RAJHI BANK"]
+      "english": "Al Rajhi Bank",
+      "short": [
+        "alrajhi bank",
+        "al rajhi",
+        "rajhi",
+        "alrajhi",
+        "al-rajhi",
+        "alrajhi bnk",
+        "arajhi",
+        "al raji",
+        "الراجحي",
+        "مصرف الراجحي",
+        "rajhy",
+        "alrajhy",
+        "arajhy",
+        "alraji",
+        "alraji bank",
+        "raji bank",
+        "alraajhi",
+        "alrajhi bnk",
+        "rajhi bank",
+        "alrajhi bnk",
+        "raji"
+      ]
+    },
+    {
+      "official": "البنك الأهلي السعودي",
+      "english": "Saudi National Bank (SNB)",
+      "short": [
+        "sncb",
+        "snc",
+        "ncb",
+        "ahli",
+        "ahli bank",
+        "al ahli",
+        "alahli bank",
+        "saudi national bank",
+        "national bank",
+        "saudi national",
+        "snb",
+        "the national commercial bank",
+        "البنك الاهلي",
+        "البنك الأهلى",
+        "الأهلي",
+        "الاهلي",
+        "n.c.b",
+        "al ahli",
+        "al ahli bank",
+        "ahli Saudi"
+      ]
+    },
+    {
+      "official": "بنك الرياض",
+      "english": "Riyad Bank",
+      "short": [
+        "riyad",
+        "riyadh",
+        "riyad bank",
+        "riyadh bank",
+        "ryad",
+        "riyad bnk",
+        "بنك الرياض",
+        "الرياض",
+        "ryd",
+        "bank riyadh"
+      ]
+    },
+    {
+      "official": "البنك العربي الوطني",
+      "english": "Arab National Bank",
+      "short": [
+        "anb",
+        "a.n.b",
+        "arab nat bank",
+        "arab national bank",
+        "arab national",
+        "arab n bank",
+        "al arab",
+        "arab",
+        "arabi",
+        "العربي",
+        "البنك العربي",
+        "arab bank"
+      ]
+    },
+    {
+      "official": "بنك البلاد",
+      "english": "Bank Albilad",
+      "short": [
+        "albilad",
+        "bilad bank",
+        "bank albilad",
+        "bilad",
+        "البلاد",
+        "بنك البلاد",
+        "al bilad",
+        "albilad bank",
+        "bilad bank"
+      ]
+    },
+    {
+      "official": "بنك الجزيرة",
+      "english": "Bank AlJazira",
+      "short": [
+        "jazira",
+        "jazira bank",
+        "bank aljazira",
+        "aljazira",
+        "al jazira",
+        "الجزيرة",
+        "بنك الجزيرة"
+      ]
+    },
+    {
+      "official": "البنك السعودي البريطاني (ساب)",
+      "english": "SABB Bank",
+      "short": [
+        "sabb",
+        "sab",
+        "s.a.b",
+        "sabb bank",
+        "البريطاني",
+        "ساب",
+        "بنك ساب"
+      ]
+    },
+    {
+      "official": "البنك السعودي للاستثمار",
+      "english": "Saudi Investment Bank (SAIB)",
+      "short": [
+        "saib",
+        "saib bank",
+        "saudi investment bank",
+        "استثمار",
+        "بنك الاستثمار",
+        "investment bank",
+        "saudi investment",
+        "s a i b"
+      ]
+    },
+    {
+      "official": "بنك الخليج الدولي",
+      "english": "Gulf International Bank (GIB)",
+      "short": [
+        "gib",
+        "gib bank",
+        "gulf intl bank",
+        "bank gulf international",
+        "الخليج",
+        "الخليج الدولي",
+        "gulf international bank",
+        "gulf bank",
+        "g.i.b"
+      ]
+    },
+    {
+      "official": "بنك الإمارات دبي الوطني",
+      "english": "Emirates NBD",
+      "short": [
+        "emirates nbd",
+        "nbd",
+        "dubai emirates bank",
+        "emirates bank",
+        "بنك الامارات",
+        "الامارات دبي الوطني",
+        "dubai bank"
+      ]
+    },
+    {
+      "official": "بنك المشرق",
+      "english": "Mashreq Bank",
+      "short": [
+        "mashreq",
+        "mashrek",
+        "mashriq",
+        "mashreq bank",
+        "المشرق",
+        "بنك المشرق",
+        "mashreq",
+        "mashrek",
+        "mashriq",
+        "mashreq bank"
+      ]
+    },
+    {
+      "official": "مصرف الإنماء",
+      "english": "Alinma Bank",
+      "short": [
+        "alinma",
+        "al inma",
+        "inma",
+        "inma bank",
+        "alinma bank"
+      ]
+    },
+    {
+      "official": "البنك السعودي الفرنسي",
+      "english": "Banque Saudi Fransi (BSF)",
+      "short": [
+        "banque saudi fransi",
+        "saudi fransi",
+        "fransi",
+        "banque fransi",
+        "bsf",
+        "البنك السعودي الفرنسي",
+        "السعودي الفرنسي",
+        "banque fransi"
+      ]
+    },
+    {
+      "official": "بنك أبوظبي الأول",
+      "english": "First Abu Dhabi Bank (FAB)",
+      "short": [
+        "fab",
+        "f.a.b",
+        "abu dhabi bank",
+        "first abu dhabi"
+      ]
+    },
+    {
+      "official": "بنك أبوظبي التجاري",
+      "english": "ADCB Bank",
+      "short": [
+        "adcb",
+        "a.d.c.b",
+        "abu dhabi commercial bank"
+      ]
+    },
+    {
+      "official": "بنك دبي الإسلامي",
+      "english": "Dubai Islamic Bank (DIB)",
+      "short": [
+        "dib",
+        "dubai islamic",
+        "islamic bank"
+      ]
+    },
+    {
+      "official": "بنك قطر الوطني",
+      "english": "Qatar National Bank (QNB)",
+      "short": [
+        "qnb",
+        "qatar national bank",
+        "q.n.b"
+      ]
+    },
+    {
+      "official": "بنك الدوحة",
+      "english": "Doha Bank",
+      "short": [
+        "doha",
+        "doha bank"
+      ]
+    },
+    {
+      "official": "بنك الكويت الوطني",
+      "english": "National Bank of Kuwait (NBK)",
+      "short": [
+        "nbk",
+        "kuwait national bank",
+        "n.b.k"
+      ]
+    },
+    {
+      "official": "بيت التمويل الكويتي",
+      "english": "Kuwait Finance House (KFH)",
+      "short": [
+        "kfh",
+        "finance house",
+        "k.f.h"
+      ]
+    },
+    {
+      "official": "بنك البحرين الوطني",
+      "english": "National Bank of Bahrain (NBB)",
+      "short": [
+        "nbb",
+        "bahrain national bank"
+      ]
+    },
+    {
+      "official": "بنك البحرين الإسلامي",
+      "english": "BisB - Bahrain Islamic Bank",
+      "short": [
+        "bisb",
+        "bahrain islamic bank",
+        "b.i.s.b"
+      ]
+    },
+    {
+      "official": "البنك الأهلي المتحد",
+      "english": "Ahli United Bank (AUB)",
+      "short": [
+        "aub",
+        "ahli united",
+        "ahli utd bank"
+      ]
+    },
+    {
+      "official": "بنك مسقط",
+      "english": "Bank Muscat",
+      "short": [
+        "muscat",
+        "bank muscat"
+      ]
+    },
+    {
+      "official": "بنك ظفار",
+      "english": "Bank Dhofar",
+      "short": [
+        "dhofar",
+        "bank dhofar"
+      ]
+    },
+    {
+      "official": "البنك الوطني العماني",
+      "english": "National Bank of Oman (NBO)",
+      "short": [
+        "nbo",
+        "oman national bank"
+      ]
+    },
+    {
+      "official": "سيتي بنك",
+      "english": "Citibank",
+      "short": [
+        "citi",
+        "citibank",
+        "city bank",
+        "citi bank"
+      ]
+    },
+    {
+      "official": "جي بي مورغان",
+      "english": "JP Morgan Chase",
+      "short": [
+        "jpm",
+        "jp morgan",
+        "morgan bank"
+      ]
+    },
+    {
+      "official": "إتش إس بي سي",
+      "english": "HSBC",
+      "short": [
+        "hsbc",
+        "h.s.b.c",
+        "hsbc bank"
+      ]
+    },
+    {
+      "official": "بنك باركليز",
+      "english": "Barclays Bank",
+      "short": [
+        "barclays",
+        "barclay bank",
+        "barclays bank"
+      ]
+    },
+    {
+      "official": "ستاندرد تشارترد",
+      "english": "Standard Chartered Bank",
+      "short": [
+        "scb",
+        "standard chartered",
+        "std chartered"
+      ]
+    },
+    {
+      "official": "دويتشه بنك",
+      "english": "Deutsche Bank",
+      "short": [
+        "deutsche bank",
+        "german bank",
+        "deutsche"
+      ]
+    },
+    {
+      "official": "بنك أوف أمريكا",
+      "english": "Bank of America",
+      "short": [
+        "boa",
+        "b.o.a",
+        "bank of america"
+      ]
+    },
+    {
+      "official": "ويلز فارجو",
+      "english": "Wells Fargo",
+      "short": [
+        "wells fargo",
+        "wells",
+        "fargo"
+      ]
+    },
+    {
+      "official": "بنك أوف طوكيو",
+      "english": "Bank of Tokyo Mitsubishi",
+      "short": [
+        "botm",
+        "tokyo bank",
+        "bank of tokyo"
+      ]
+    },
+    {
+      "official": "بنك الصين",
+      "english": "Bank of China (BOC)",
+      "short": [
+        "boc",
+        "bank of china",
+        "china bank"
+      ]
+    },
+    {
+      "official": "البنك الزراعي الصيني",
+      "english": "Agricultural Bank of China (ABC)",
+      "short": [
+        "abc",
+        "agricultural bank",
+        "agribank"
+      ]
+    },
+    {
+      "official": "البنك الصناعي والتجاري الصيني",
+      "english": "ICBC",
+      "short": [
+        "icbc",
+        "i.c.b.c",
+        "china industrial bank"
+      ]
     }
   ]
 }

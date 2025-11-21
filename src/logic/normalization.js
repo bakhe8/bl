@@ -1,4 +1,9 @@
 const AR_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+const AR_TATWEEL = /\u0640/g;
+const AR_EASTERN_DIGITS = /[٠-٩]/g;
+
+const normalizeArabicDigits = (text) =>
+  text.replace(AR_EASTERN_DIGITS, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 
 const normalizeArabicShapes = (text) =>
   text
@@ -11,9 +16,21 @@ const normalizeArabicShapes = (text) =>
 export const normalizeName = (input) => {
   if (!input) return "";
   let s = String(input).trim();
+
+  try {
+    s = s.normalize("NFKC");
+  } catch {
+    // بعض البيئات لا تدعم normalize — نتجاهل
+  }
+
   s = normalizeArabicShapes(s);
   s = s.replace(AR_DIACRITICS, "");
-  s = s.replace(/\./g, " ");
+  s = s.replace(AR_TATWEEL, "");
+  s = normalizeArabicDigits(s);
+
+  // فواصل/نقاط/شرطات → مسافة
+  s = s.replace(/[\.،,:;\/\\\-–—]+/g, " ");
+
   s = s.toLowerCase();
   s = s.replace(/\s+/g, " ");
   return s.trim();

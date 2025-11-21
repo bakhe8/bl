@@ -1,11 +1,12 @@
 # وثيقة خوارزميات التطابق — أولوية 4/5
 
 ## طبقات التطابق
-1) البنوك: تطابق مباشر/اختصار فقط ضد القاموس الرسمي (`banks.json`)، مع Fuzzy ≥ 0.9 للتقارب العالي. لا variants ولا تعلم.
-2) الموردون: تطابق رسمي، ثم variants (LocalStorage + بذرة `variants_suppliers.json`)، ثم Fuzzy:
-   - ≥ 0.90 اعتماد تلقائي.
-   - 0.80–0.89 اقتراح للمستخدم في واجهة القرارات.
-   - < 0.80 يعتبر اسمًا جديدًا ويُعرض للقرار.
+(راجع أيضًا: [dictionaries.md](dictionaries.md) لمصادر القواميس)
+1) البنوك: تطابق رسمي/اختصار فقط ضد القاموس الرسمي (`banks.json`) + Fuzzy Jaro-Winkler ≥ 0.9 (لا تعلّم للبنوك).
+2) الموردون: تطابق رسمي، ثم variants المتعلمة (LocalStorage + بذرة `variants_suppliers.json`)، ثم Fuzzy:
+   - ≥ 0.90 اعتماد تلقائي (status=auto).
+   - 0.80–0.89 اقتراح للمستخدم (status=fuzzy).
+   - < 0.80 قرار يدوي (status=manual).
 
 ## إدارة الغموض
 - البنوك غير المعروفة: رسالة تنبيه “اسم البنك غير معروف – اختر من القائمة الرسمية”.
@@ -13,21 +14,25 @@
 - عند تعدد تطابقات متقاربة: عرض مرتّب بالثقة؛ لا قبول تلقائي تحت 0.80.
 
 ## حفظ القرار
-- البنوك: لا حفظ ولا تعلّم.
-- الموردون: قرار المستخدم يحفظ variant في LocalStorage (`bgl_supplier_variants`) ويُبنى من بذرة `variants_suppliers.json` عند أول تشغيل.
-- ترقية variant: occurrences ≥ 3 → confirmed = true → لا يظهر مجددًا في قائمة القرارات.
+- الموردون فقط: قرار المستخدم يحفظ alias في LocalStorage (`bgl_supplier_variants`)، مع score يعتمد التشابه + التكرار + القرارات اليدوية.
+- ترقية variant: score ≥ 0.92 أو occurrences ≥ 3 → confirmed = true → لا يظهر مجددًا في قائمة القرارات.
 
 ## شكل تخزين variant (مثال)
 ```json
-{
-  "raw": "rajhi bank",
-  "officialId": "bank_001",
-  "language": "en",
-  "count": 1,
-  "confirmed": false
+"cure dev": {
+  "official": "شركة كير للتطوير",
+  "occurrences": 3,
+  "confirmed": true,
+  "status": "confirmed",
+  "manualCount": 1,
+  "autoCount": 0,
+  "score": 0.95,
+  "lastSeenAt": "2025-11-21T20:00:00.000Z"
 }
 ```
 
 ## جودة التطابق
-- حد أدنى للتشابه قبل اعتماد Fuzzy.
+- حد أدنى للتشابه قبل اعتماد Fuzzy (Jaro-Winkler).
 - استخدام سياق إضافي (مبلغ/تاريخ/رقم ضمان) للمساعدة في القرار اليدوي عند اللزوم.
+- رفض أسماء عشوائية/قصيرة جدًا قبل التعلّم لضمان جودة القاموس.
+- حالات التعلّم للموردين: tentative → semi → confirmed → permanent حسب score/occurrences (لا تنطبق على البنوك).

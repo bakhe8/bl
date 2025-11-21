@@ -191,6 +191,32 @@ button[disabled] {
   color: #1b7f3a;
 }
 
+.cell-main {
+  display: block;
+}
+
+.prob-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.prob-bar {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.prob-fill {
+  height: 100%;
+  background: #6b7280;
+}
+.prob-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
 .inline-decision {
   margin-top: 0.3rem;
   padding: 0.8rem;

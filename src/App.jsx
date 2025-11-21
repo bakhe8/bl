@@ -25,7 +25,7 @@ export default function App() {
   const [needsReview, setNeedsReview] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [decisionDraft, setDecisionDraft] = useState({ bank: "", supplier: "" });
-  const [bankVariants, setBankVariants] = useState(() => loadVariants(BANK_VARIANTS_KEY, [], {}));
+  const bankVariants = {};
   const [supplierVariants, setSupplierVariants] = useState(() =>
     loadVariants(SUPPLIER_VARIANTS_KEY, SUPPLIER_VARIANTS_SEEDED, SUPPLIER_OFFICIAL_LOOKUP)
   );
@@ -79,11 +79,11 @@ export default function App() {
       const mapped = mapRows(rawRows);
       const enriched = mapped.map((r) => {
         const bankRes = resolveBank(r.bankRaw, BANK_DICTIONARY, bankVariants, FUZZY_BANK_AUTO);
-        const supRes = resolveSupplierValue(r.supplierRaw, supplierVariants, SUPPLIER_OPTIONS, {
-          fuzzyAuto: FUZZY_SUPPLIER_AUTO,
-          fuzzySuggest: FUZZY_SUPPLIER_SUGGEST,
-        });
-        return {
+      const supRes = resolveSupplierValue(r.supplierRaw, supplierVariants, SUPPLIER_OPTIONS, {
+        fuzzyAuto: FUZZY_SUPPLIER_AUTO,
+        fuzzySuggest: FUZZY_SUPPLIER_SUGGEST,
+      });
+      return {
           ...r,
           bankDisplay: bankRes.official || r.bankRaw,
           supplierDisplay: supRes.official || r.supplierRaw,
@@ -93,12 +93,14 @@ export default function App() {
           bankStatus: bankRes.status,
           bankOfficial: bankRes.official,
           bankFuzzySuggestion: bankRes.fuzzySuggestion,
-          supplierStatus: supRes.status,
-          supplierOfficial: supRes.official,
-          supplierFuzzySuggestion: supRes.fuzzySuggestion,
-          needsDecision: bankRes.status !== "auto" || supRes.status !== "auto",
-        };
-      });
+        supplierStatus: supRes.status,
+        supplierOfficial: supRes.official,
+        supplierFuzzySuggestion: supRes.fuzzySuggestion,
+        supplierLearnStatus: supRes.learnStatus || null,
+        supplierProbability: supRes.probability || null,
+        needsDecision: bankRes.status !== "auto" || supRes.status !== "auto",
+      };
+    });
       const reviewList = enriched.filter((r) => r.needsDecision);
       setRecords(enriched);
       setNeedsReview(reviewList);
@@ -121,7 +123,6 @@ export default function App() {
         `تعذر تحويل تاريخ الانتهاء للصف ${selectedRecord.id}، لن يُحسب تمديد تلقائي.`,
       ]);
     }
-    setBankVariants((dict) => learnVariant(selectedRecord.bankRaw, bankOfficial, dict, BANK_VARIANTS_KEY));
     setSupplierVariants((dict) =>
       learnVariant(selectedRecord.supplierRaw, supplierOfficial, dict, SUPPLIER_VARIANTS_KEY)
     );
@@ -144,19 +145,17 @@ export default function App() {
       exportLearning: () => ({
         version: 1,
         exportedAt: new Date().toISOString(),
-        bankAliases: bankVariants,
+        bankAliases: {},
         supplierVariants,
       }),
       importLearning: (payload) => {
         try {
           const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-          const mergedBank = parsed.bankAliases ? mergeAliasDict(bankVariants, parsed.bankAliases) : bankVariants;
+          const mergedBank = {};
           const mergedSup = parsed.supplierVariants
             ? mergeAliasDict(supplierVariants, parsed.supplierVariants)
             : supplierVariants;
-          localStorage.setItem(BANK_VARIANTS_KEY, JSON.stringify(mergedBank));
           localStorage.setItem(SUPPLIER_VARIANTS_KEY, JSON.stringify(mergedSup));
-          setBankVariants(mergedBank);
           setSupplierVariants(mergedSup);
         } catch (e) {
           console.error("فشل استيراد التعلم عبر Console", e);
@@ -166,7 +165,7 @@ export default function App() {
     return () => {
       delete window.learningTools;
     };
-  }, [bankVariants, supplierVariants]);
+  }, [supplierVariants]);
 
   return (
     <div className="app" dir="rtl">
@@ -210,6 +209,7 @@ export default function App() {
               decisionDraft={decisionDraft}
               onDraftChange={setDecisionDraft}
               onDecision={handleDecisionSave}
+              supplierVariants={supplierVariants}
             />
           </div>
           <div className="right-column">

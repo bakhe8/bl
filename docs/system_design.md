@@ -13,7 +13,7 @@ root/
 │   index.css
 │   data/
 │     dictionaries/
-│       banks.json               # قاموس البنوك الرسمي (ثابت)
+│       banks.json               # قاموس البنوك الرسمي (ثابت – إصدار 2 بجميع الاختصارات/الأخطاء الشائعة) ← راجع [dictionaries.md](dictionaries.md)
 │       suppliers.json           # قاموس الموردين الرسمي (عربي)
 │       variants_suppliers.json  # بذرة variants للموردين
 │     banks.js                   # تحميل القاموس الرسمي للبنوك

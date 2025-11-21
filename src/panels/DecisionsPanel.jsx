@@ -1,9 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ExpandedDecisionRow } from "../components/ExpandedDecisionRow";
 import { BANK_OPTIONS } from "../constants/banks";
 import { SUPPLIER_OPTIONS } from "../constants/suppliers";
 
-export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, onDraftChange, onDecision }) {
+export function DecisionsPanel({
+  records,
+  selectedId,
+  onSelect,
+  decisionDraft,
+  onDraftChange,
+  onDecision,
+  supplierVariants = {},
+}) {
+  const supplierChoices = useMemo(() => {
+    const learned = Object.values(supplierVariants || {}).map((v) => v?.official).filter(Boolean);
+    const merged = [...SUPPLIER_OPTIONS, ...learned];
+    return merged.filter((v, i, arr) => arr.indexOf(v) === i);
+  }, [supplierVariants]);
+
   const getDraftBank = (r) => {
     const suggested = r && (r.bankFuzzySuggestion || r.bankOfficial || r.bankDisplay || r.bankRaw);
     return decisionDraft.bank || suggested || "";
@@ -22,12 +36,39 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
     return { label: "جاهز", className: "text-success" };
   };
 
+  const supplierStageChip = (r) => {
+    const stage = r.supplierLearnStatus;
+    if (!stage) return null;
+    const labels = {
+      tentative: "تعلم أولي",
+      semi: "تعلم مبدئي",
+      confirmed: "مؤكد",
+      permanent: "نهائي",
+    };
+    return <span className="chip subtle">{labels[stage] || stage}</span>;
+  };
+
+  const probabilityBar = (val) => {
+    if (val === null || val === undefined) return null;
+    const pct = Math.round(val * 100);
+    return (
+      <div className="prob-wrap">
+        <div className="prob-bar">
+          <div className="prob-fill" style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+        </div>
+        <span className="prob-label">{pct}%</span>
+      </div>
+    );
+  };
+
   return (
     <section className="card">
       <div className="card-head">
         <div>
           <h2>حلّ القرارات (البنك / المورد)</h2>
-          <p className="muted">اختر صفاً غامضاً لتأكيد البنك والمورد.</p>
+          <p className="muted">
+            اختر صفاً غامضاً لتأكيد البنك والمورد. التعلّم محفوظ للموردين فقط؛ البنوك ثابتة من القاموس الرسمي.
+          </p>
         </div>
         <div className="chip muted">{records.filter((r) => r.needsDecision).length} صف غامض</div>
       </div>
@@ -39,6 +80,7 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
               <th>البنك</th>
               <th>المورد</th>
               <th>الحالة</th>
+              <th>تعلّم المورد</th>
             </tr>
           </thead>
           <tbody>
@@ -59,13 +101,19 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
                     onClick={() => onSelect(r.id)}
                   >
                     <td>{idx + 1}</td>
-                    <td>{r.bankDisplay || r.bankRaw || "-"}</td>
-                    <td>{r.supplierDisplay || r.supplierRaw || "-"}</td>
+                    <td>
+                      <div className="cell-main">{r.bankDisplay || r.bankRaw || "-"}</div>
+                    </td>
+                    <td>
+                      <div className="cell-main">{r.supplierDisplay || r.supplierRaw || "-"}</div>
+                      {probabilityBar(r.supplierProbability)}
+                    </td>
                     <td className={status.className}>{status.label}</td>
+                    <td>{supplierStageChip(r)}</td>
                   </tr>
                     {isSelected && r.needsDecision ? (
                       <tr className="inline-row">
-                        <td colSpan={4}>
+                        <td colSpan={5}>
                           <div className="inline-decision">
                             <div className="inline-grid">
                             {needsBank ? (
@@ -104,7 +152,7 @@ export function DecisionsPanel({ records, selectedId, onSelect, decisionDraft, o
                                   onChange={(e) => onDraftChange((d) => ({ ...d, supplier: e.target.value }))}
                                 >
                                   <option value="">اختر...</option>
-                                  {[supplierValue, ...SUPPLIER_OPTIONS]
+                                  {[supplierValue, ...supplierChoices]
                                     .filter(Boolean)
                                     .filter((v, i, arr) => arr.indexOf(v) === i)
                                     .map((opt) => (
