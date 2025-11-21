@@ -173,6 +173,8 @@ export default function App() {
           const supRes = resolveValue(r.supplierRaw, supplierVariants, { enableFuzzy: true, fuzzyThreshold: 0.9 });
           return {
             ...r,
+            bankDisplay: bankRes.official || r.bankRaw,
+            supplierDisplay: supRes.official || r.supplierRaw,
             bankStatus: bankRes.status,
             bankOfficial: bankRes.official,
             bankFuzzySuggestion: bankRes.fuzzySuggestion,
@@ -204,7 +206,20 @@ export default function App() {
     const next = needsReview.filter((r) => r.id !== selectedRecord.id);
     setNeedsReview(next);
     setRecords((recs) =>
-      recs.map((r) => (r.id === selectedRecord.id ? { ...r, needsDecision: false } : r))
+      recs.map((r) =>
+        r.id === selectedRecord.id
+          ? {
+              ...r,
+              needsDecision: false,
+              bankOfficial: modal.record?.bankOfficial || r.bankOfficial,
+              supplierOfficial: modal.record?.supplierOfficial || r.supplierOfficial,
+              bankDisplay: modal.record?.bankOfficial || r.bankDisplay || r.bankRaw,
+              supplierDisplay: modal.record?.supplierOfficial || r.supplierDisplay || r.supplierRaw,
+              bankStatus: "auto",
+              supplierStatus: "auto",
+            }
+          : r
+      )
     );
     setSelectedId(next[0]?.id ?? null);
   };
@@ -337,10 +352,10 @@ export default function App() {
                   <strong>رقم العقد:</strong> {selectedRecord.contractNo || "-"}
                 </div>
                 <div>
-                  <strong>البنك (خام):</strong> {selectedRecord.bankRaw || "-"}
+                  <strong>البنك:</strong> {selectedRecord.bankDisplay || selectedRecord.bankRaw || "-"}
                 </div>
                 <div>
-                  <strong>المورد (خام):</strong> {selectedRecord.supplierRaw || "-"}
+                  <strong>المورد:</strong> {selectedRecord.supplierDisplay || selectedRecord.supplierRaw || "-"}
                 </div>
               </div>
             ) : (
@@ -401,7 +416,7 @@ export default function App() {
                   <p>إشارة إلى الضمان البنكي الصادر منكم لصالح مستشفى الملك فيصل التخصصي، وبناءً على المعلومات التالية:</p>
                   <ul>
                     <li>المبلغ: {modal.record?.amount || "-"}</li>
-                    <li>اسم المورد: {modal.record?.supplierRaw || "-"}</li>
+                    <li>اسم المورد: {modal.record?.supplierDisplay || modal.record?.supplierOfficial || modal.record?.supplierRaw || "-"}</li>
                   </ul>
                   <p>نأمل منكم التكرم بتمديد تاريخ الضمان المشار إليه.</p>
                 </div>
