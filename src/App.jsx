@@ -116,7 +116,10 @@ export default function App() {
   const [supplierVariants, setSupplierVariants] = useState(() => loadVariants(SUPPLIER_VARIANTS_KEY));
 
   const selectedRecord =
-    needsReview.find((r) => r.id === selectedId) || records.find((r) => r.id === selectedId) || needsReview[0] || null;
+    records.find((r) => r.id === selectedId) ||
+    needsReview.find((r) => r.id === selectedId) ||
+    records[0] ||
+    null;
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -276,7 +279,7 @@ export default function App() {
             <div className="chip muted">{needsReview.length} صف غامض</div>
           </div>
           <div className="results">
-            {needsReview.length ? (
+            {records.length ? (
               <table className="mapping-table">
                 <thead>
                   <tr>
@@ -287,26 +290,28 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {needsReview.map((r, idx) => (
+                  {records.map((r, idx) => (
                     <tr
                       key={r.id}
-                      className={selectedId === r.id ? "selected-row" : ""}
+                      className={`${selectedId === r.id ? "selected-row" : ""} ${!r.needsDecision ? "resolved-row" : ""}`}
                       onClick={() => setSelectedId(r.id)}
                     >
                       <td>{idx + 1}</td>
                       <td>{r.bankRaw || "-"}</td>
                       <td>{r.supplierRaw || "-"}</td>
-                      <td className="text-amber">يحتاج تأكيد</td>
+                      <td className={r.needsDecision ? "text-amber" : "text-success"}>
+                        {r.needsDecision ? "يحتاج تأكيد" : "جاهز"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              "لا توجد صفوف غامضة."
+              "لا توجد سجلات."
             )}
           </div>
           <div className="field-group">
-            <button onClick={openDecision} disabled={!selectedRecord}>
+            <button onClick={openDecision} disabled={!selectedRecord || !selectedRecord.needsDecision}>
               حل الحالات المعلقة
             </button>
             <button onClick={openLetter} disabled={!selectedRecord && !needsReview.length && !records.length}>

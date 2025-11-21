@@ -147,6 +147,14 @@ button[disabled] {
   color: #b05a00;
 }
 
+.text-success {
+  color: #1b7f3a;
+}
+
+.resolved-row {
+  background: #eefbf2;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
