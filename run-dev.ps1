@@ -19,24 +19,38 @@ if ($viteProcesses) {
 }
 
 # تحرير المنفذ 5173 إذا كان مشغولاً من عملية أخرى
-try {
-    $port = 5173
-    $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
-    if ($listeners) {
-        $pids = $listeners | Select-Object -ExpandProperty OwningProcess -Unique
-        foreach ($pid in $pids) {
-            try {
+function Stop-PortListener($port) {
+    try {
+        $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop
+        if ($listeners) {
+            $pids = $listeners | Select-Object -ExpandProperty OwningProcess -Unique
+            foreach ($pid in $pids) {
                 Write-Host "🛑 Port $port in use by PID $pid. Stopping..." -ForegroundColor Yellow
                 Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-            } catch {
-                Write-Host "⚠️ لم يتمكن السكربت من إيقاف PID $pid. أغلقه يدوياً إن لزم." -ForegroundColor Magenta
             }
+            Start-Sleep -Milliseconds 300
+            return
         }
-        Start-Sleep -Milliseconds 300
+    } catch {
+        # fallback to netstat
+        $netstat = netstat -ano | Select-String ":$port\s+.*LISTENING" -ErrorAction SilentlyContinue
+        if ($netstat) {
+            $pids = $netstat | ForEach-Object {
+                $parts = ($_ -split "\s+")
+                $parts[-1]
+            } | Sort-Object -Unique
+            foreach ($pid in $pids) {
+                Write-Host "🛑 Port $port in use by PID $pid (netstat). Stopping..." -ForegroundColor Yellow
+                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            }
+            Start-Sleep -Milliseconds 300
+        }
     }
-} catch {
-    Write-Host "⚠️ لم يُستخدم Get-NetTCPConnection (قد لا يكون متاحاً)، تابع التشغيل." -ForegroundColor Magenta
 }
+
+# تحرير المنفذ 5173 إذا كان مشغولاً
+$port = 5173
+Stop-PortListener -port $port
 
 Write-Host "🚀 Starting Vite dev server on port 5173..." -ForegroundColor Cyan
 
