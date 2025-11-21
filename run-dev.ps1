@@ -23,10 +23,10 @@ function Stop-PortListener($port) {
     try {
         $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop
         if ($listeners) {
-            $pids = $listeners | Select-Object -ExpandProperty OwningProcess -Unique
-            foreach ($pid in $pids) {
-                Write-Host "🛑 Port $port in use by PID $pid. Stopping..." -ForegroundColor Yellow
-                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            $listenerPids = $listeners | Select-Object -ExpandProperty OwningProcess -Unique
+            foreach ($pidVal in $listenerPids) {
+                Write-Host "🛑 Port $port in use by PID $pidVal. Stopping..." -ForegroundColor Yellow
+                Stop-Process -Id $pidVal -Force -ErrorAction SilentlyContinue
             }
             Start-Sleep -Milliseconds 300
             return
@@ -35,13 +35,13 @@ function Stop-PortListener($port) {
         # fallback to netstat
         $netstat = netstat -ano | Select-String ":$port\s+.*LISTENING" -ErrorAction SilentlyContinue
         if ($netstat) {
-            $pids = $netstat | ForEach-Object {
+            $listenerPids = $netstat | ForEach-Object {
                 $parts = ($_ -split "\s+")
                 $parts[-1]
             } | Sort-Object -Unique
-            foreach ($pid in $pids) {
-                Write-Host "🛑 Port $port in use by PID $pid (netstat). Stopping..." -ForegroundColor Yellow
-                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            foreach ($pidVal in $listenerPids) {
+                Write-Host "🛑 Port $port in use by PID $pidVal (netstat). Stopping..." -ForegroundColor Yellow
+                Stop-Process -Id $pidVal -Force -ErrorAction SilentlyContinue
             }
             Start-Sleep -Milliseconds 300
         }
