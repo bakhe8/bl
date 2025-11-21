@@ -12,7 +12,7 @@ const normalizeKey = (key) =>
   String(key || "")
     .trim()
     .toLowerCase()
-    .replace(/[_\-]+/g, " ")
+    .replace(/[._\-]+/g, " ")
     .replace(/\s+/g, " ");
 
 const pick = (row, keys) => {
