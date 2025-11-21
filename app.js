@@ -355,18 +355,14 @@ excelInput.addEventListener("change", (e) => {
     return;
   }
 
-  if (!file.name.toLowerCase().endsWith(".xlsx")) {
-    errorMessage.textContent = "الملف المرفوع ليس بصيغة XLSX. الرجاء اختيار ملف Excel صحيح.";
-    excelInput.value = "";
-    selectedFile = null;
-    analyzeBtn.disabled = true;
-    fileInfo.textContent = "";
-    return;
+  const isXlsx = file.name.toLowerCase().includes("xlsx") || file.type.includes("sheet");
+  if (!isXlsx) {
+    errorMessage.textContent = "الملف قد لا يكون XLSX، سيتم المتابعة لكن يُفضل رفع ملف Excel صحيح.";
   }
 
-  const maxSizeBytes = 1 * 1024 * 1024; // 1MB
+  const maxSizeBytes = 5 * 1024 * 1024; // 5MB
   if (file.size > maxSizeBytes) {
-    errorMessage.textContent = "حجم الملف يتجاوز الحد المسموح به (1MB). الرجاء تقليل عدد الصفوف.";
+    errorMessage.textContent = "حجم الملف يتجاوز الحد المسموح به (5MB). الرجاء تقليل عدد الصفوف.";
     excelInput.value = "";
     selectedFile = null;
     analyzeBtn.disabled = true;
