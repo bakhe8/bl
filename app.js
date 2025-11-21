@@ -360,6 +360,10 @@ excelInput.addEventListener("change", (e) => {
     return;
   }
 
+  selectedFile = file;
+  analyzeBtn.disabled = false;
+  fileInfo.textContent = `الملف المختار: ${file.name} — الحجم: ${(file.size / 1024).toFixed(1)} KB`;
+
   const isXlsx = file.name.toLowerCase().includes("xlsx") || (file.type && file.type.includes("sheet"));
   if (!isXlsx) {
     errorMessage.textContent = "الملف قد لا يكون XLSX، سيتم المتابعة لكن يُفضل رفع ملف Excel صحيح.";
@@ -367,14 +371,8 @@ excelInput.addEventListener("change", (e) => {
 
   const maxSizeBytes = 20 * 1024 * 1024; // 20MB
   if (file.size > maxSizeBytes) {
-    setFileError("حجم الملف يتجاوز الحد المسموح به (20MB). الرجاء تقليل عدد الصفوف أو تقسيم الملف.");
-    excelInput.value = "";
-    return;
+    errorMessage.textContent = "تنبيه: حجم الملف يتجاوز 20MB. يفضل تقليل الصفوف، وسيتم المتابعة على مسؤوليتك.";
   }
-
-  selectedFile = file;
-  analyzeBtn.disabled = false;
-  fileInfo.textContent = `الملف المختار: ${file.name} — الحجم: ${(file.size / 1024).toFixed(1)} KB`;
 });
 
 analyzeBtn.addEventListener("click", async () => {
