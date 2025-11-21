@@ -24,10 +24,12 @@ const pick = (row, keys) => {
   return "";
 };
 
-const pickLoose = (row, needles) => {
+const pickLoose = (row, needles, exclude = []) => {
   for (const [k, v] of Object.entries(row)) {
     if (!v || String(v).trim() === "") continue;
-    if (needles.some((n) => k.includes(n))) return v;
+    const lowerKey = k.toLowerCase();
+    if (exclude.some((ex) => lowerKey.includes(ex))) continue;
+    if (needles.some((n) => lowerKey.includes(n))) return v;
   }
   return "";
 };
@@ -175,7 +177,8 @@ export default function App() {
             pickLoose(keys, ["guarantee", "bond", "bg"]);
           const contractVal =
             pick(keys, ["contract", "contract no", "contract number", "contract #", "رقم العقد"]) ||
-            pickLoose(keys, ["contract", "عقد", "عقود"]);
+            pickLoose(keys, ["contract"], ["contractor"]) ||
+            pickLoose(keys, ["عقد", "عقود"]);
           return {
             id: idx + 1,
             bankRaw: pick(keys, ["bank", "bank name", "اسم البنك", "البنك"]),
