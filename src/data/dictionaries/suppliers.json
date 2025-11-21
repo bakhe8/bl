@@ -1,0 +1,8 @@
+﻿{
+  "version": 1,
+  "updatedAt": "2025-01-01",
+  "suppliers": [
+    {"id": "sup_001", "official": "شركة كير للتطوير"},
+    {"id": "sup_002", "official": "شركة الهدى للتجارة"}
+  ]
+}

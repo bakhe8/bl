@@ -1,0 +1,21 @@
+﻿{
+  "version": 1,
+  "updatedAt": "2025-01-01",
+  "banks": [
+    {
+      "id": "bank_001",
+      "official": "البنك العربي الوطني",
+      "short": ["ANB", "ARAB NATIONAL BANK"]
+    },
+    {
+      "id": "bank_002",
+      "official": "البنك الأهلي السعودي",
+      "short": ["SNB", "SAUDI NATIONAL BANK"]
+    },
+    {
+      "id": "bank_003",
+      "official": "مصرف الراجحي",
+      "short": ["RAJHI", "AL RAJHI BANK"]
+    }
+  ]
+}

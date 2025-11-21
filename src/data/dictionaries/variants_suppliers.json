@@ -1,0 +1,9 @@
+﻿{
+  "version": 1,
+  "updatedAt": "2025-01-01",
+  "records": [
+    {"id": "var_001", "raw": "CURE DEV", "clean": "cure dev", "officialId": "sup_001", "occurrences": 3, "confirmed": true},
+    {"id": "var_002", "raw": "Cure Dev Intl", "clean": "cure dev intl", "officialId": "sup_001", "occurrences": 1, "confirmed": false},
+    {"id": "var_003", "raw": "AL HUDA TRD CO", "clean": "al huda trd co", "officialId": "sup_002", "occurrences": 2, "confirmed": true}
+  ]
+}

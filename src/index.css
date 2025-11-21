@@ -147,8 +147,69 @@ button[disabled] {
   color: #b05a00;
 }
 
+.text-blue {
+  color: #0f4c75;
+}
+
+.text-purple {
+  color: #6f42c1;
+}
+
 .text-success {
   color: #1b7f3a;
+}
+
+.inline-decision {
+  margin-top: 0.4rem;
+  padding: 0.9rem;
+  background: #fff;
+  border: 1px solid #e3e9f1;
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.inline-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.inline-row td {
+  background: #f0f5ff;
+  border: 1px solid #d6e4ff;
+}
+
+.inline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.inline-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.inline-group label {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f4c75;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+  font-size: 0.95rem;
 }
 
 .resolved-row {

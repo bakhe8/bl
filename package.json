@@ -7,7 +7,8 @@
     "start": "powershell -ExecutionPolicy Bypass -File run-dev.ps1",
     "dev": "vite --host --port 5173 --strictPort --clearScreen false",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.1",
@@ -16,6 +17,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vitest": "^4.0.12"
   }
 }

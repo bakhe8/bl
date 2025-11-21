@@ -3,41 +3,39 @@
 ## بنية المشروع (Folders / Files)
 ```
 root/
-│ index.html          # واجهة التحميل/القرارات/المعاينة
-│ style.css
-│ app.js
+│ index.html             # نقطة دخول Vite
+│ vite.config.js
+│ package.json
+│ run-dev.ps1            # تشغيل dev server على 5173 مع تنظيف Vite القديم
 │
-├─ modules/
-│   fileLoader.js
-│   excelParser.js
-│   columnMapper.js
-│   normalizer.js
-│   dictionaryEngine.js
-│   decisionUI.js
-│   letterBuilder.js
-│   preview.js
-│
-├─ dictionaries/
-│   banks_official.json
-│   banks_variants.json
-│   suppliers_official.json
-│   suppliers_variants.json
+├─ src/
+│   App.jsx              # واجهة واحدة للتحميل/القرارات/المعاينة
+│   index.css
+│   data/
+│     dictionaries/
+│       banks.json               # قاموس البنوك الرسمي (ثابت)
+│       suppliers.json           # قاموس الموردين الرسمي (عربي)
+│       variants_suppliers.json  # بذرة variants للموردين
+│     banks.js                   # تحميل القاموس الرسمي للبنوك
+│     suppliers.js               # تحميل الموردين + بذرة variants
+│   utils/
+│     normalize.js
+│     bankMatch.js               # مطابقة البنوك الرسمية فقط (no learning)
+│     variants.js                # تعلّم الموردين (LocalStorage)
 │
 ├─ templates/
 │   letter_template.html
 │
-└─ saved-config/
-    column_mapping.json
+└─ docs/                         # ملفات التوثيق
 ```
 
 ## الموديولات الرئيسية
-- **fileLoader/excelParser**: قراءة الملف عبر SheetJS وتحويله إلى JSON موحّد.
-- **columnMapper**: اكتشاف الأعمدة وتطبيق mapping قابل للحفظ.
-- **normalizer**: تنقية الحقول (أسماء، مبالغ، تواريخ) وتوحيدها.
-- **dictionaryEngine**: إدارة القواميس الرسمية والـ variants.
-- **matcher**: تطبيق طبقات التطابق مع حفظ القرارات كـ variants.
-- **decisionUI**: عرض الصفوف الغامضة فقط وتلقي قرارات المستخدم.
-- **letterBuilder/preview**: توليد الخطاب بالعربية (RTL) وتهيئته للطباعة/التصدير PDF.
+- **Excel Loader**: SheetJS لتحويل الملف إلى JSON موحّد.
+- **Normalizer**: تنظيف الحقول (أسماء/تواريخ/مبالغ) وتوحيد الهمزات/المسافات.
+- **Bank Matcher**: تطابق البنوك ضد القاموس الرسمي + اختصاراته فقط، بدون تعلّم.
+- **Supplier Matcher/Learning**: تطابق الموردين (رسمي → variants → Fuzzy) مع تخزين variants في LocalStorage.
+- **Decision UI**: عرض الصفوف الغامضة وتثبيت قرارات الموردين فقط.
+- **Letter Builder/Preview**: توليد الخطاب بالعربية (RTL) وتهيئته للطباعة/التصدير PDF.
 
 ## التدفق العام
 Upload Excel → Parse → Normalize → Match → Decision UI → Letter Builder → Preview → Print
@@ -54,9 +52,14 @@ Upload Excel → Parse → Normalize → Match → Decision UI → Letter Builde
 - شاشة التحميل → شاشة القرارات (فقط الصفوف الغامضة) → شاشة عرض الخطاب/الطباعة.
 
 ## التخزين
-- LocalStorage كمصدر رئيسي للقواميس التعلمية.
-- ملفات JSON للتصدير/الاستيراد (القواميس والـ column mapping) مع `schemaVersion`/`version` لضمان النسخ الاحتياطي والتنقل بين الأجهزة.
-- الترقية: إذا وُجد إصدار أقدم من القاموس/المابينغ، تُطبَّق ترقية تلقائية إلى الصيغة الجديدة مع حفظ نسخة احتياطية.
+- البنوك: قراءة فقط من `banks.json` (لا LocalStorage).
+- الموردون: LocalStorage (`bgl_supplier_variants`) + بذرة `variants_suppliers.json`. تصدير/استيراد JSON لنسخ الاحتياطي أو النقل بين الأجهزة.
+- الترقية: عند تغيير شكل القاموس/المابينغ، تُطبَّق ترقية للصيغة الجديدة مع الاحتفاظ بنسخة احتياطية.
+
+## نقاط التعقيم (Sanitize Pipeline Points)
+- عند القراءة من Excel: تطبيع/تعقيم قبل التخزين.
+- قبل عرض جدول القرارات: ترميز/تعقيم النصوص الخام.
+- قبل الحقن في قالب الخطاب: تعقيم placeholders لضمان خلوّها من HTML.
 
 ## اعتماديات
 - SheetJS لقراءة Excel.
