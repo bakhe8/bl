@@ -57,6 +57,13 @@ function resetUI() {
   mappingArea.innerHTML = "";
 }
 
+function setFileError(msg) {
+  errorMessage.textContent = msg;
+  selectedFile = null;
+  analyzeBtn.disabled = true;
+  fileInfo.textContent = "";
+}
+
 function summarize(rows, warnings) {
   const total = rows.length;
   const missingRequired = rows.filter((row) =>
@@ -349,24 +356,19 @@ excelInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
 
   if (!file) {
-    selectedFile = null;
-    analyzeBtn.disabled = true;
-    fileInfo.textContent = "";
+    setFileError("");
     return;
   }
 
-  const isXlsx = file.name.toLowerCase().includes("xlsx") || file.type.includes("sheet");
+  const isXlsx = file.name.toLowerCase().includes("xlsx") || (file.type && file.type.includes("sheet"));
   if (!isXlsx) {
     errorMessage.textContent = "الملف قد لا يكون XLSX، سيتم المتابعة لكن يُفضل رفع ملف Excel صحيح.";
   }
 
-  const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+  const maxSizeBytes = 20 * 1024 * 1024; // 20MB
   if (file.size > maxSizeBytes) {
-    errorMessage.textContent = "حجم الملف يتجاوز الحد المسموح به (5MB). الرجاء تقليل عدد الصفوف.";
+    setFileError("حجم الملف يتجاوز الحد المسموح به (20MB). الرجاء تقليل عدد الصفوف أو تقسيم الملف.");
     excelInput.value = "";
-    selectedFile = null;
-    analyzeBtn.disabled = true;
-    fileInfo.textContent = "";
     return;
   }
 
