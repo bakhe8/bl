@@ -216,6 +216,7 @@ export default function App() {
               onDraftChange={setDecisionDraft}
               onDecision={handleDecisionSave}
               supplierVariants={supplierVariants}
+              suppliersCanonical={SUPPLIERS_CANONICAL}
             />
           </div>
           <div className="right-column">

@@ -217,6 +217,10 @@ button[disabled] {
   color: #6b7280;
 }
 
+.small-text {
+  font-size: 0.82rem;
+}
+
 .inline-decision {
   margin-top: 0.3rem;
   padding: 0.8rem;

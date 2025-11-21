@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { ExpandedDecisionRow } from "../components/ExpandedDecisionRow";
 import { BANK_OPTIONS } from "../constants/banks";
 import { SUPPLIER_OPTIONS } from "../constants/suppliers";
+import { normalizeName } from "../logic/normalization";
 
 export function DecisionsPanel({
   records,
@@ -11,12 +12,14 @@ export function DecisionsPanel({
   onDraftChange,
   onDecision,
   supplierVariants = {},
+  suppliersCanonical = [],
 }) {
   const supplierChoices = useMemo(() => {
     const learned = Object.values(supplierVariants || {}).map((v) => v?.official).filter(Boolean);
-    const merged = [...SUPPLIER_OPTIONS, ...learned];
+    const aliases = suppliersCanonical.flatMap((s) => s.aliases || []);
+    const merged = [...SUPPLIER_OPTIONS, ...learned, ...aliases];
     return merged.filter((v, i, arr) => arr.indexOf(v) === i);
-  }, [supplierVariants]);
+  }, [supplierVariants, suppliersCanonical]);
 
   const getDraftBank = (r) => {
     const suggested = r && (r.bankFuzzySuggestion || r.bankOfficial || r.bankDisplay || r.bankRaw);
@@ -168,6 +171,22 @@ export function DecisionsPanel({
                                   value={supplierValue}
                                   onChange={(e) => onDraftChange((d) => ({ ...d, supplier: e.target.value }))}
                                 />
+                                {(() => {
+                                  const normDraft = normalizeName(supplierValue || r.supplierFuzzySuggestion || r.supplierRaw || "");
+                                  const canonicalMatch =
+                                    suppliersCanonical.find(
+                                      (c) => normalizeName(c.canonical) === normDraft
+                                    ) ||
+                                    suppliersCanonical.find(
+                                      (c) => (c.normalized || normalizeName(c.canonical)) === normDraft
+                                    );
+                                  if (!canonicalMatch || !(canonicalMatch.aliases || []).length) return null;
+                                  return (
+                                    <div className="muted small-text">
+                                      أسماء معروفة: {(canonicalMatch.aliases || []).join(" • ")}
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             ) : null}
                           </div>
