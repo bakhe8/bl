@@ -53,7 +53,7 @@ Upload Excel → Parse → Normalize → Match → Decision UI → Letter Builde
 
 ## التخزين
 - البنوك: قراءة فقط من `banks.json` (لا LocalStorage).
-- الموردون: LocalStorage (`bgl_supplier_variants`) + بذرة `variants_suppliers.json`. تصدير/استيراد JSON لنسخ الاحتياطي أو النقل بين الأجهزة.
+- الموردون: LocalStorage (`bgl_supplier_variants`) + بذرة `variants_suppliers.json`. التعلم محلي للجلسة/المتصفح؛ يمكن تصدير/استيراد يدوي من Console إذا لزم.
 - الترقية: عند تغيير شكل القاموس/المابينغ، تُطبَّق ترقية للصيغة الجديدة مع الاحتفاظ بنسخة احتياطية.
 
 ## نقاط التعقيم (Sanitize Pipeline Points)

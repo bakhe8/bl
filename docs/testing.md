@@ -2,10 +2,12 @@
 
 ## اختبارات الوحدة (Unit)
 - تطابق بنك ومورد (رسمي، variant، إنجليزي).
-- تنسيق التاريخ.
+- تنسيق التاريخ وتمديد سنة واحدة (مع تحذير عند الفشل).
 - تنسيق المبلغ.
-- تحليل Excel وتحويل الأعمدة.
-- أدوات: `npm test` باستخدام Vitest مع تغطية لـ normalizeName و resolveSupplierValue وأمان حالات التاريخ.
+- تحليل Excel وتحويل الأعمدة (أولوية VALIDITY DATE).
+- دمج التعلم (aliases/variants) بعد الاستيراد.
+- تعميم القرار على الصفوف المماثلة للبنك/المورد.
+- أدوات: `npm test` باستخدام Vitest (normalizeName, resolveSupplierValue, decision propagation, date utils, learning merge).
 
 ## اختبارات التكامل (Integration)
 - رفع ملف → مطابقة → إنشاء خطاب → طباعة PDF.

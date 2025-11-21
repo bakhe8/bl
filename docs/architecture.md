@@ -20,7 +20,7 @@
 
 ## التخزين
 - **البنوك**: JSON رسمي فقط (قراءة).
-- **الموردون**: LocalStorage لـ variants (`bgl_supplier_variants`) + بذرة JSON، مع تصدير/استيراد عند الحاجة.
+- **الموردون**: LocalStorage لـ variants (`bgl_supplier_variants`) + بذرة JSON، لا تعديل تلقائي للقواميس الرسمية؛ التعلّم محلي للجلسة/المتصفح ويمكن تصديره/استيراده يدوياً من Console.
 
 ## التقنيات
 - HTML/CSS مع دعم RTL كامل.
