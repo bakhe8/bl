@@ -44,6 +44,49 @@
         لم يتم بعد تحميل أي ملف.
       </div>
     </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>الأخطاء والتنبيهات</h2>
+          <p class="muted">عرض مختصر للتنبيهات وعدد الصفوف الغامضة.</p>
+        </div>
+        <div id="alertBadge" class="chip muted">0 تنبيه</div>
+      </div>
+      <div id="alertsList" class="warning-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>حلّ القرارات (البنك / المورد)</h2>
+          <p class="muted">اختر صفاً غامضاً لتأكيد البنك والمورد.</p>
+        </div>
+        <div id="decisionBadge" class="chip muted">0 صف غامض</div>
+      </div>
+      <div id="decisionTableWrapper" class="results">لا توجد صفوف غامضة.</div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>تفاصيل السجل</h2>
+          <p class="muted">عرض معلومات الصف المحدد.</p>
+        </div>
+      </div>
+      <div id="recordDetails" class="results">لا يوجد سجل محدد.</div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>معاينة الخطاب</h2>
+          <p class="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
+        </div>
+        <button id="openLetterModalBtn" disabled>فتح المعاينة</button>
+      </div>
+      <div class="results">اضغط على صف ثم "فتح المعاينة".</div>
+    </section>
   </main>
 
   <div id="modalOverlay" class="modal-overlay" aria-hidden="true">

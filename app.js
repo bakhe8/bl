@@ -43,6 +43,7 @@ let mappingState = {};
 let dictionaries = loadDictionaries();
 let matchState = { autoMatched: [], needsReview: [], warnings: [] };
 let letterTemplateHtml = "";
+let selectedRecordId = null;
 
 // افتراضياً اترك زر التحليل مفعلاً؛ الضغط بدون ملف لن يقوم بشيء لكن يسهل الاستجابة عند اختيار الملف.
 analyzeBtn.disabled = false;
@@ -80,8 +81,88 @@ function summarize(rows, warnings) {
 }
 
 function renderWarnings(list) {
-  if (!list.length) return "";
+  if (!list.length) return "<ul class=\"warning-list\"><li>لا توجد تنبيهات.</li></ul>";
   return `<ul class="warning-list">${list.map((w) => `<li>${w}</li>`).join("")}</ul>`;
+}
+
+function renderAlerts() {
+  const alertsList = document.getElementById("alertsList");
+  const alertBadge = document.getElementById("alertBadge");
+  if (!alertsList || !alertBadge) return;
+  const count = matchState.warnings.length + matchState.needsReview.length;
+  alertBadge.textContent = `${count} تنبيه`;
+  const extra = matchState.needsReview.length ? [`${matchState.needsReview.length} صف يحتاج قرار`] : [];
+  alertsList.innerHTML = renderWarnings([...matchState.warnings, ...extra]);
+}
+
+function selectedRecord() {
+  if (selectedRecordId == null) return null;
+  return matchState.needsReview.find((r) => r.id === selectedRecordId) ||
+    matchState.autoMatched.find((r) => r.id === selectedRecordId) ||
+    null;
+}
+
+function renderDecisionTable() {
+  const wrapper = document.getElementById("decisionTableWrapper");
+  const badge = document.getElementById("decisionBadge");
+  if (!wrapper || !badge) return;
+  badge.textContent = `${matchState.needsReview.length} صف غامض`;
+  if (!matchState.needsReview.length) {
+    wrapper.textContent = "لا توجد صفوف غامضة.";
+    return;
+  }
+  const rows = matchState.needsReview
+    .map(
+      (r, idx) => `
+      <tr data-id="${r.id}" class="${selectedRecordId === r.id ? "selected-row" : ""}">
+        <td>${idx + 1}</td>
+        <td>${r.bank_raw || ""}</td>
+        <td>${r.supplier_raw || ""}</td>
+        <td class="text-amber">يحتاج تأكيد</td>
+      </tr>
+    `
+    )
+    .join("");
+  wrapper.innerHTML = `
+    <table class="mapping-table">
+      <thead>
+        <tr><th>#</th><th>البنك (خام)</th><th>المورد (خام)</th><th>الحالة</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  wrapper.querySelectorAll("tr[data-id]").forEach((tr) => {
+    tr.addEventListener("click", () => {
+      selectedRecordId = Number(tr.dataset.id);
+      renderDecisionTable();
+      renderRecordDetails();
+      document.getElementById("openLetterModalBtn").disabled = false;
+    });
+  });
+}
+
+function renderRecordDetails() {
+  const details = document.getElementById("recordDetails");
+  if (!details) return;
+  const rec =
+    selectedRecord() ||
+    matchState.needsReview[0] ||
+    matchState.autoMatched[0] ||
+    null;
+  if (!rec) {
+    details.textContent = "لا يوجد سجل محدد.";
+    return;
+  }
+  if (selectedRecordId == null) selectedRecordId = rec.id;
+  details.innerHTML = `
+    <div class="warning-list">
+      <div><strong>رقم الضمان:</strong> ${rec.guarantee_no || "-"}</div>
+      <div><strong>رقم العقد:</strong> ${rec.contract_no || "-"}</div>
+      <div><strong>البنك (خام):</strong> ${rec.bank_raw || "-"}</div>
+      <div><strong>المورد (خام):</strong> ${rec.supplier_raw || "-"}</div>
+    </div>
+  `;
+  document.getElementById("openLetterModalBtn").disabled = false;
 }
 
 function isMappingComplete(mapping) {
@@ -158,6 +239,9 @@ function processWithMapping() {
 
   matchState = matchRows(normalizedRows, dictionaries);
   matchState.warnings.push(...warnings);
+  if (matchState.needsReview.length && selectedRecordId == null) {
+    selectedRecordId = matchState.needsReview[0].id ?? null;
+  }
   summarize(normalizedRows, matchState.warnings);
   renderPreview();
 }
@@ -183,10 +267,13 @@ function renderPreview() {
   resultsArea.innerHTML = summaryHtml;
   resultsArea.appendChild(pre);
 
-  const resolveBtn = document.getElementById("resolveBtn");
-  const previewBtn = document.getElementById("previewLetterBtn");
-  resolveBtn?.addEventListener("click", () => openDecisionModal());
-  previewBtn?.addEventListener("click", () => openLetterModal());
+  document.getElementById("resolveBtn")?.addEventListener("click", () => openDecisionModal());
+  document.getElementById("previewLetterBtn")?.addEventListener("click", () => openLetterModal());
+
+  renderAlerts();
+  renderDecisionTable();
+  renderRecordDetails();
+  document.getElementById("openLetterModalBtn").disabled = !selectedRecord();
 }
 
 function openModal(title, bodyBuilder, options = {}) {
@@ -304,6 +391,8 @@ function openDecisionModal() {
       matchState.autoMatched.push(resolved);
 
       renderPreview();
+      renderDecisionTable();
+      renderRecordDetails();
       if (matchState.needsReview.length) {
         openDecisionModal();
       } else {
@@ -314,17 +403,17 @@ function openDecisionModal() {
 }
 
 async function openLetterModal() {
-  if (!matchState.autoMatched.length) {
+  const rec = selectedRecord() || matchState.autoMatched[0];
+  if (!rec) {
     openModal("لا توجد خطابات", (body) => {
       body.innerHTML = "<p class='muted'>لا توجد صفوف مطابقة لعرض خطاب.</p>";
     });
     return;
   }
   await ensureLetterTemplate();
-  const firstRow = matchState.autoMatched[0];
   const html = renderLetter(
     {
-      ...firstRow,
+      ...rec,
       sender_name: "اسم المرسل",
       sender_position: "الوظيفة",
       department_name: "الإدارة",
