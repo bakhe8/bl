@@ -6,6 +6,7 @@
 - **القواميس الرسمية** (JSON ثابت):
 - البنوك: `src/data/dictionaries/banks.json` — ثابتة 100%، تحوي `official` (عربي) و`short[]` للاختصارات EN. لا تعلّم ولا Aliases. (راجع [system_design.md](system_design.md))
 - الموردون: `src/data/dictionaries/suppliers.json` — الأسماء العربية الرسمية فقط.
+- الموردون (القاموس الموحّد): `src/data/dictionaries/suppliers_canonical.json` — ناتج دمج الشركات (raw/cleaned) + التعلم التاريخي (aliases + counts).
 - **القواميس التعلمية (الموردون فقط)**:
   - الموردون: LocalStorage تحت المفتاح `bgl_supplier_variants` + بذرة `src/data/dictionaries/variants_suppliers.json` (تُحمّل عند البدء).
   - هدف التعلّم: إضافة صيغ خام للمورد → اسم رسمي عربي، دون تعديل الاسم الرسمي نفسه.
