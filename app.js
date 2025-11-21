@@ -44,6 +44,9 @@ let dictionaries = loadDictionaries();
 let matchState = { autoMatched: [], needsReview: [], warnings: [] };
 let letterTemplateHtml = "";
 
+// افتراضياً اترك زر التحليل مفعلاً؛ الضغط بدون ملف لن يقوم بشيء لكن يسهل الاستجابة عند اختيار الملف.
+analyzeBtn.disabled = false;
+
 async function ensureLetterTemplate() {
   if (!letterTemplateHtml) {
     letterTemplateHtml = await loadTemplate();
