@@ -122,7 +122,7 @@ export default function App() {
     const file = e.target.files[0];
     setError("");
     setWarnings([]);
-    setRows([]);
+    setRecords([]);
     setNeedsReview([]);
     setSelectedId(null);
     if (!file) {
