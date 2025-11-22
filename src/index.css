@@ -3,21 +3,21 @@
 }
 
 :root {
-  font-family: "Cairo", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "Tajawal", "Segoe UI", system-ui, -apple-system, sans-serif;
   color: #222;
   background-color: #f2f2f4;
 }
 
 @font-face {
-  font-family: "Cairo";
-  src: local("Cairo"), local("Cairo-Regular"), url("https://fonts.gstatic.com/s/cairo/v23/SLXLc1nY6HkvalIkTpu0.woff2") format("woff2");
+  font-family: "Tajawal";
+  src: local("Tajawal"), local("Tajawal-Regular"), url("https://fonts.gstatic.com/s/tajawal/v12/Iurf6YBj_oCad4k1l-wq.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "Cairo";
-  src: local("Cairo SemiBold"), url("https://fonts.gstatic.com/s/cairo/v23/SLXLc1nY6HkvalI0S5u0.woff2") format("woff2");
+  font-family: "Tajawal";
+  src: local("Tajawal SemiBold"), url("https://fonts.gstatic.com/s/tajawal/v12/Iurf6YBj_oCad4k1l-8p.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
 }
@@ -75,11 +75,30 @@ body {
   gap: 1rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid #e4e4e8;
+  position: relative;
 }
 
 .card h2 {
   margin: 0 0 0.15rem 0;
   font-size: 1.1rem;
+}
+
+.collapse-btn {
+  border: none;
+  background: transparent;
+  color: #333;
+  width: auto;
+  height: auto;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  position: absolute;
+  left: 6px;
+  top: 6px;
+}
+.collapse-btn:hover {
+  background: transparent;
 }
 
 .muted {
@@ -195,26 +214,39 @@ button[disabled] {
   display: block;
 }
 
+.prob-slot {
+  min-height: 14px;
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  width: 100%;
+}
 .prob-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
+  margin: 0;
+  line-height: 1;
+  width: 100%;
 }
 .prob-bar {
   flex: 1;
-  height: 6px;
-  background: #e5e7eb;
+  min-width: 60px;
+  height: 4px;
+  background: #d5d7dc;
   border-radius: 999px;
   overflow: hidden;
 }
 .prob-fill {
   height: 100%;
-  background: #6b7280;
+  background: #4b5563;
 }
 .prob-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
+}
+.prob-inline {
+  display: inline-block;
 }
 
 .small-text {
@@ -269,23 +301,63 @@ button[disabled] {
 }
 
 .letter-iframe {
-  width: 130%;
-  min-height: 1400px;
+  width: 100%;
+  min-height: 1200px;
   border: 1px solid #c6c7cd;
   border-radius: 0.55rem;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
-  transform: scale(0.75);
+  transform: scale(0.6);
   transform-origin: top center;
-  height: 1400px;
+  height: 1200px;
   overflow: hidden;
+  display: block;
+  margin: 0 auto;
 }
 
 .letter-iframe-wrap {
-  overflow: auto;
-  max-height: 800px;
-  padding-bottom: 8px;
+  overflow: visible;
+  overflow-x: hidden;
+  max-height: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  background: transparent;
 }
 
+.letter-inline {
+  width: 100%;
+  margin: 0 auto;
+  background: transparent;
+}
+.print-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.print-btn {
+  align-self: flex-start;
+  border: 1px solid #c2c4ca;
+  background: #f4f5f7;
+  color: #333;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.print-btn:hover {
+  background: #e9eaed;
+}
+
+@media print {
+  body > *:not(#print-container) {
+    display: none !important;
+  }
+  #print-container {
+    display: block !important;
+  }
+}
 .inline-decision {
   margin-top: 0.3rem;
   padding: 0.8rem;
@@ -296,6 +368,21 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+}
+
+.inline-row-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.inline-row-actions .inline-group {
+  flex: 1 1 260px;
+}
+
+.inline-row-actions .inline-actions {
+  flex: 0 0 auto;
 }
 
 .inline-group {
@@ -352,7 +439,7 @@ button[disabled] {
 
 .top-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1.6fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
 }
 
@@ -415,4 +502,29 @@ input[type="file"]:focus {
   flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.5rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+.details-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.info-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+  padding: 0.2rem 0;
+  font-size: 0.95rem;
+}
+.info-label {
+  color: #4b5563;
+  font-weight: 600;
+}
+.info-value {
+  color: #1f2933;
 }

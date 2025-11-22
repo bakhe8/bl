@@ -61,6 +61,7 @@ export const formatDateValue = (value) => {
     return (
       new Intl.DateTimeFormat("ar", {
         calendar: "gregory",
+        numberingSystem: "arab",
         day: "2-digit",
         month: "long",
         year: "numeric",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlertsPanel } from "./panels/AlertsPanel";
+import EnvDebug from "./components/EnvDebug";
 import { DecisionsPanel } from "./panels/DecisionsPanel";
 import { RecordDetailsPanel } from "./panels/RecordDetailsPanel";
 import { PreviewPanel } from "./panels/PreviewPanel";
@@ -26,6 +26,9 @@ export default function App() {
   const [needsReview, setNeedsReview] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [decisionDraft, setDecisionDraft] = useState({ bank: "", supplier: "" });
+  const [uploadCollapsed, setUploadCollapsed] = useState(false);
+  const [decisionsCollapsed, setDecisionsCollapsed] = useState(false);
+  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
   const bankVariants = {};
   const [supplierVariants, setSupplierVariants] = useState(() =>
     loadVariants(SUPPLIER_VARIANTS_KEY, SUPPLIER_VARIANTS_SEEDED, SUPPLIER_OFFICIAL_LOOKUP)
@@ -177,9 +180,9 @@ export default function App() {
     <div className="app" dir="rtl">
       <header className="app-header">
         <div>
-          <p className="eyebrow">Guarantee Letter Automation Tool</p>
           <h1>نظام توليد خطابات تمديد الضمانات البنكية</h1>
           <p className="lede">رفع ملف Excel → حل الغموض → خطاب جاهز للطباعة.</p>
+          <EnvDebug />
         </div>
       </header>
 
@@ -187,22 +190,44 @@ export default function App() {
         <div className="top-grid">
           <section className="card">
             <div className="card-head">
+              <button
+                type="button"
+                className="collapse-btn"
+                onClick={() => setUploadCollapsed((v) => !v)}
+                aria-label="طي/فتح"
+              >
+                {uploadCollapsed ? "＋" : "－"}
+              </button>
               <div>
                 <h2>رفع ملف Excel</h2>
                 <p className="muted">الصيغة المدعومة: ‎.xlsx بترميز UTF-8 – الحجم الأقصى 20MB.</p>
               </div>
             </div>
-            <form className="field-inline" onSubmit={(e) => { e.preventDefault(); handleAnalyze(); }}>
-              <input type="file" accept=".xlsx" onChange={handleFileChange} />
-              <button type="submit">بدء التحليل</button>
-            </form>
-            <p className="muted">
-              {fileInfo ? `الملف المختار: ${fileInfo.name} — ${(fileInfo.size / 1024).toFixed(1)} KB` : "لم يتم اختيار ملف بعد."}
-            </p>
-            <p className="error">{error}</p>
-          </section>
+            {!uploadCollapsed && (
+              <>
+                <form className="field-inline" onSubmit={(e) => { e.preventDefault(); handleAnalyze(); }}>
+                  <input type="file" accept=".xlsx" onChange={handleFileChange} />
+                  <button type="submit">بدء التحليل</button>
+                </form>
+                <p className="muted">
+                  {fileInfo
+                    ? `الملف المختار: ${fileInfo.name} — ${(fileInfo.size / 1024).toFixed(1)} KB`
+                    : error
+                    ? ""
+                    : "لم يتم اختيار ملف بعد."}
+                </p>
+                {error ? <p className="error">{error}</p> : null}
 
-          <AlertsPanel warnings={warnings} needsReviewCount={needsReview.length} />
+                {warnings.length > 0 && (
+                  <div className="warning-list">
+                    {warnings.map((w, i) => (
+                      <div key={i}>• {w}</div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
         </div>
 
         <div className="layout-grid">
@@ -216,10 +241,16 @@ export default function App() {
               onDecision={handleDecisionSave}
               supplierVariants={supplierVariants}
               suppliersCanonical={SUPPLIERS_CANONICAL}
+              collapsed={decisionsCollapsed}
+              onToggleCollapse={() => setDecisionsCollapsed((v) => !v)}
             />
           </div>
           <div className="right-column">
-            <RecordDetailsPanel record={selectedRecord} />
+            <RecordDetailsPanel
+              record={selectedRecord}
+              collapsed={detailsCollapsed}
+              onToggleCollapse={() => setDetailsCollapsed((v) => !v)}
+            />
             <PreviewPanel record={selectedRecord || records[0]} />
           </div>
         </div>

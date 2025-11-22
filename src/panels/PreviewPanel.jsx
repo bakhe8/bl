@@ -32,7 +32,9 @@ export function PreviewPanel({ record }) {
     const amount =
       Number.isNaN(amountNum) || !Number.isFinite(amountNum)
         ? rec.amount || "-"
-        : new Intl.NumberFormat("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amountNum);
+        : new Intl.NumberFormat("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            .format(amountNum)
+            .replace(/٬/g, ",");
     const expiry = formatDateValue(rec.dateRaw || "") || "-";
     const renewal = toDisplayOneYear(rec.dateRaw) || "-";
     const bgUrl = `${window.location.origin}/templates/letter_bg.svg`;
@@ -49,23 +51,30 @@ export function PreviewPanel({ record }) {
     src: url('${window.location.origin}/templates/AL-Mohanad Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
+    unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF;
   }
   @font-face {
-    font-family: 'AL-Mohanad-ExtraBold';
-    src: url('${window.location.origin}/templates/AL-Mohanad Extra Bold.ttf') format('truetype');
+    font-family: 'ArialBodyCS';
+    src: local("Arial (Body CS)"), local("Arial");
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+0000-00FF;
+  }
+  .fw-800-sharp {
     font-weight: 800;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: 'AL-Mohanad-Regular';
-    src: url('${window.location.origin}/templates/AL-Mohanad.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    unicode-range: U+0000-00FF; /* اللاتينية فقط */
+    text-shadow:
+      0.015em 0       currentColor,
+     -0.015em 0       currentColor,
+      0      0.015em  currentColor,
+      0     -0.015em  currentColor,
+      0.01em  0.01em  currentColor,
+     -0.01em  0.01em  currentColor,
+      0.01em -0.01em  currentColor,
+     -0.01em -0.01em  currentColor;
   }
   .letter-inline,
   .letter-inline * {
-    font-family: 'AL-Mohanad-Regular', 'AL-Mohanad', 'Cairo', 'Segoe UI', sans-serif !important;
+    font-family: 'AL-Mohanad', 'ArialBodyCS', 'Arial', sans-serif !important;
     line-height: 23pt; /* تباعد أسطر ثابت كما في Word */
   }
   .letter-preview {
@@ -81,25 +90,25 @@ export function PreviewPanel({ record }) {
   .letter-inline .A4 {
     font-size:15pt !important;
     box-sizing: border-box;
-    padding-top: 2.2in;
+    padding-top: 2.4in;
     padding-right: 1in;
     padding-left: 1in;
     padding-bottom: 1in;
     background: #ffffff url("${bgUrl}") top center/contain no-repeat;
     border: none;
     box-shadow: none;
-    width: 794px;
-    min-height: 1123px;
+    width: 210mm;
+    min-height: 297mm;
     margin-left: auto;
     margin-right: auto;
     display: block;
     position: relative;
   }
   .subject {
-    background: #fafafa;
+    background: #f0f1f5;
     padding: 10px;
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #c8c9d1;
     margin: 0;
   }
   .info-list { margin: 12px 0; padding-right: 20px; }
@@ -127,17 +136,17 @@ export function PreviewPanel({ record }) {
 <section class="letter-preview">
   <div class="A4">
     <div class="header-line" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin:0; line-height:23pt;">
-      <div class="to-line" style="margin:0; line-height:23pt; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">السادة / ${bankName}</div>
+      <div class="to-line fw-800-sharp" style="margin:0; line-height:23pt;">السادة / ${bankName}</div>
       <div class="greeting" style="margin:0; line-height:23pt;">المحترمين</div>
     </div>
 
     <div style="margin:0; line-height:23pt;">
       <div style="margin:0; line-height:23pt;">
-        <div style="margin:0; line-height:23pt; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">إدارة المؤسسات المالية - قسم الضمانات</div>
-        <div style="margin:0; line-height:23pt; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">ص.ب. ٥٦٠٠٦ الرياض ١١٥٥٤</div>
-        <div style="margin:0; line-height:23pt; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">
-          بريد الكتروني:
-          <span style="text-shadow:none; font-family:'AL-Mohanad-Regular','AL-Mohanad','Cairo','Segoe UI',sans-serif;"> bgfinance@kfshrc.edu.sa</span>
+        <div class="fw-800-sharp" style="margin:0; line-height:23pt;">إدارة المؤسسات المالية - قسم الضمانات</div>
+        <div class="fw-800-sharp" style="margin:0; line-height:23pt;">ص.ب. ٥٦٠٠٦ الرياض ١١٥٥٤</div>
+        <div style="margin:0; line-height:23pt;">
+          <span class="fw-800-sharp">بريد الكتروني:</span>
+          <span style="text-shadow:none; font-family:'ArialBodyCS','Arial',sans-serif; font-weight:400;"> bgfinance@kfshrc.edu.sa</span>
         </div>
       </div>
 
@@ -151,8 +160,7 @@ export function PreviewPanel({ record }) {
       </div>
 
       <div class="first-paragraph">
-        إشارة الى الضمان البنكي الموضح أعلاه، والصادر منكم لصالح مستشفى الملك فيصل التخصصي ومركز الأبحاث بالرياض
-        على حساب ${supplierName} بمبلغ قدره (${amount})، نأمل منكم <span style="display:inline; font-weight:800; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">تمديد فترة سريان الضمان حتى تاريخ ${renewal}</span>، مع بقاء الشروط الأخرى دون تغيير،
+        إشارة الى الضمان البنكي الموضح أعلاه، والصادر منكم لصالحنا على حساب ${supplierName} بمبلغ قدره (${amount})، نأمل منكم <span class="fw-800-sharp" style="display:inline;">تمديد فترة سريان الضمان حتى تاريخ ${renewal}</span>، مع بقاء الشروط الأخرى دون تغيير،
         وإفادتنا بذلك من خلال البريد الإلكتروني المخصص للضمانات البنكية لدى مستشفى الملك فيصل التخصصي ومركز الأبحاث بالرياض (bgfinance@kfshrc.edu.sa)، كما نأمل منكم إرسال أصل تمديد الضمان إلى:
       </div>
 
@@ -168,12 +176,12 @@ export function PreviewPanel({ record }) {
 
     <div style="text-indent:5em; margin-top:6px; line-height:23pt; margin-bottom:0;">وَتفضَّلوا بِقبُول خَالِص تحيَّاتِي</div>
 
-    <div style="text-align: center; margin-right:17em; line-height:32pt; margin-top:0; text-shadow: 0 0 1px currentColor, 0.4px 0 currentColor, -0.4px 0 currentColor;">
+    <div class="fw-800-sharp" style="text-align: center; margin-right:17em; line-height:32pt; margin-top:0;">
         مُدير الإدارة العامَّة للعمليَّات المحاسبيَّة<br><br>
         سَامِي بن عبَّاس الفايز
       </div>
 
-    <div style="position:absolute; left:1in; right:1in; bottom:0.7in; display:flex; justify-content:space-between; font-size:8.5pt; line-height:11pt; font-weight:300; font-family:'AL-Mohanad-Regular','AL-Mohanad','Cairo','Segoe UI',sans-serif; text-shadow:none;">
+    <div style="position:absolute; left:1in; right:1in; bottom:0.7in; display:flex; justify-content:space-between; font-size:8.5pt; line-height:11pt; font-weight:300; font-family:'ArialBodyCS','Arial',sans-serif; text-shadow:none;">
       <span>MBC:09-2</span>
       <span>BAMZ</span>
     </div>
@@ -184,19 +192,97 @@ export function PreviewPanel({ record }) {
 
   const htmlTemplate = record?.letterHtml || record?.rawHtml || buildHtmlFromRecord(record) || null;
 
+  const handlePrint = () => {
+    if (!htmlTemplate) return;
+    const bgUrl = `${window.location.origin}/templates/letter_bg.svg`;
+    const container = document.createElement("div");
+    container.id = "print-container";
+    container.innerHTML = `
+      <style>
+        @page { size: A4; margin: 0; }
+        @font-face {
+          font-family: 'AL-Mohanad';
+          src: url('${window.location.origin}/templates/AL-Mohanad Bold.ttf') format('truetype');
+          font-weight: bold;
+          font-style: normal;
+          unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF;
+        }
+        @font-face {
+          font-family: 'ArialBodyCS';
+          src: local("Arial (Body CS)"), local("Arial");
+          font-weight: normal;
+          font-style: normal;
+          unicode-range: U+0000-00FF;
+        }
+        .fw-800-sharp {
+          font-weight: 800;
+          text-shadow:
+            0.015em 0       currentColor,
+           -0.015em 0       currentColor,
+            0      0.015em  currentColor,
+            0     -0.015em  currentColor,
+            0.01em  0.01em  currentColor,
+           -0.01em  0.01em  currentColor,
+            0.01em -0.01em  currentColor,
+           -0.01em -0.01em  currentColor;
+        }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #print-container {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          background: #fff;
+          padding: 0;
+          margin: 0;
+        }
+        #print-container .letter-preview { margin: 0; padding: 0; width: 210mm; }
+        #print-container .letter-preview .A4 {
+          font-size:15pt !important;
+          box-sizing: border-box;
+          padding-top: 2.2in;
+          padding-right: 1in;
+          padding-left: 1in;
+          padding-bottom: 1in;
+          background: #ffffff url("${bgUrl}") top center/contain no-repeat;
+          border: none;
+          box-shadow: none;
+          width: 210mm;
+          min-height: 297mm;
+          margin: 0 auto;
+          position: relative;
+        }
+        #print-container .letter-inline, #print-container .letter-inline * {
+          font-family: 'AL-Mohanad', 'ArialBodyCS', 'Arial', sans-serif !important;
+        }
+      </style>
+      <div class="letter-inline">${htmlTemplate}</div>
+    `;
+    document.body.appendChild(container);
+    setTimeout(() => {
+      window.print();
+      document.body.removeChild(container);
+    }, 400);
+  };
+
   return (
     <>
       {record && htmlTemplate && (
-        <div className="letter-iframe-wrap" ref={wrapRef}>
-          <div
-            className="letter-inline"
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: "top center",
-              width: scaledWidth,
-            }}
-            dangerouslySetInnerHTML={{ __html: htmlTemplate }}
-          />
+        <div className="print-wrap">
+          <button type="button" className="print-btn" onClick={handlePrint}>
+            طباعة PDF
+          </button>
+          <div className="letter-iframe-wrap" ref={wrapRef}>
+            <div
+              className="letter-inline"
+              style={{
+                transform: `scale(${scale})`,
+                transformOrigin: "top center",
+                width: scaledWidth,
+              }}
+              dangerouslySetInnerHTML={{ __html: htmlTemplate }}
+            />
+          </div>
         </div>
       )}
     </>
