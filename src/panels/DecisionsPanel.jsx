@@ -22,11 +22,7 @@ export function DecisionsPanel({
     return merged.filter((v, i, arr) => arr.indexOf(v) === i);
   }, [supplierVariants, suppliersCanonical]);
 
-  const showLearnCol = useMemo(
-    () => records.some((r) => r.supplierLearnStatus),
-    [records]
-  );
-  const colCount = showLearnCol ? 5 : 4;
+  const colCount = 4;
 
   const getDraftBank = (r) => {
     const suggested = r && (r.bankFuzzySuggestion || r.bankOfficial || r.bankDisplay || r.bankRaw);
@@ -44,18 +40,6 @@ export function DecisionsPanel({
     if (!bankAuto && supplierAuto) return { label: "البنك", className: "text-blue" };
     if (bankAuto && !supplierAuto) return { label: "المورد", className: "text-purple" };
     return { label: "جاهز", className: "text-success" };
-  };
-
-  const supplierStageChip = (r) => {
-    const stage = r.supplierLearnStatus;
-    if (!stage) return null;
-    const labels = {
-      tentative: "تعلم أولي",
-      semi: "تعلم مبدئي",
-      confirmed: "مؤكد",
-      permanent: "نهائي",
-    };
-    return <span className="chip subtle">{labels[stage] || stage}</span>;
   };
 
   const probabilityBar = (val) => {
@@ -90,7 +74,6 @@ export function DecisionsPanel({
               <th>البنك</th>
               <th>المورد</th>
               <th>الحالة</th>
-              {showLearnCol ? <th>تعلّم المورد</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -119,7 +102,6 @@ export function DecisionsPanel({
                       {probabilityBar(r.supplierProbability)}
                     </td>
                     <td className={status.className}>{status.label}</td>
-                    {showLearnCol ? <td>{supplierStageChip(r)}</td> : null}
                   </tr>
                     {isSelected && r.needsDecision ? (
                       <tr className="inline-row">
