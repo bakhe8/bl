@@ -16,6 +16,7 @@ export function PreviewPanel({ record }) {
         : new Intl.NumberFormat("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amountNum);
     const expiry = formatDateValue(rec.dateRaw || "") || "-";
     const renewal = toDisplayOneYear(rec.dateRaw) || "-";
+    const bgUrl = `${window.location.origin}/templates/letter_bg.svg`;
 
     return `
 <!doctype html>
@@ -57,7 +58,7 @@ export function PreviewPanel({ record }) {
         padding-right: 1in;
         padding-left: 1in;
         padding-bottom: 1in;
-        background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1130'%3E%3Crect width='100%25' height='100%25' fill='%23ffffff'/%3E%3Cpath d='M20 40 h760 v1050 h-760 z' fill='none' stroke='%23c6c6c6' stroke-width='2' stroke-dasharray='6,6'/%3E%3C/svg%3E") top center/contain no-repeat;
+        background: #ffffff url("${bgUrl}") top center/contain no-repeat;
         border-radius: 6px;
         border: 2px solid #c8c8c8;
         box-shadow:
