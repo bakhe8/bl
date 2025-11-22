@@ -44,6 +44,7 @@ export function SupplierTypeahead({
     const normQ = normalizeName(debouncedQuery);
     if (!normQ) return [];
     const isArabic = (text) => /[\u0600-\u06FF]/.test(text || "");
+    const normCurrent = normalizeName(value || "");
 
     return suppliersCanonical
       .map((c) => {
@@ -56,7 +57,9 @@ export function SupplierTypeahead({
         const weightedAlias = aliasScore * 0.95;
         const baseScore = Math.max(weightedCanon, weightedAlias);
         const variantBoost = variantScoresByOfficial.get(c.canonical) || 0;
-        const finalScore = Math.max(baseScore, variantBoost);
+        // إذا كان المستخدم اختار هذا المورد سابقاً (value الحالي)، نعطيه دفعة إضافية ليكون أعلى ترتيباً
+        const selectionBoost = normCurrent && normCurrent === normCanon ? 0.35 : 0;
+        const finalScore = Math.max(baseScore, variantBoost) + selectionBoost;
         return {
           official: c.canonical,
           score: finalScore,
