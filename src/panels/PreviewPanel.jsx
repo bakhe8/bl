@@ -23,25 +23,142 @@ export function PreviewPanel({ record }) {
   <head>
     <meta charset="UTF-8" />
     <style>
-      body { font-family: "Cairo", "Segoe UI", sans-serif; margin: 20px; color: #1f1f1f; }
-      .letter { max-width: 780px; margin: 0 auto; line-height: 1.8; font-size: 15px; }
-      h1 { font-size: 18px; margin-bottom: 12px; }
-      ul { padding-inline-start: 20px; }
+      body {
+        font-size:20px !important;
+        background: transparent;
+        padding: 40px;
+        font-family: 'Cairo', 'Segoe UI', sans-serif;
+        line-height: 1.9;
+      }
+      .letter-preview {
+        background: none;
+        padding: 0;
+        border: none;
+        direction: rtl;
+        width: auto;
+        min-height: auto;
+        margin: auto;
+        box-shadow: none;
+      }
+      .letter-preview .card-head h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+      .letter-preview .card-head .muted {
+        margin: 4px 0 12px;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      .A4 {
+        font-size:20px !important;
+        box-sizing: border-box;
+        padding-top: 2.4in;
+        padding-right: 1in;
+        padding-left: 1in;
+        padding-bottom: 1in;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 2px solid #c8c8c8;
+        box-shadow:
+          0 0 40px rgba(0,0,0,0.30),
+          0 12px 22px rgba(0,0,0,0.25),
+          0 4px 6px rgba(0,0,0,0.20);
+        width: 794px;
+        min-height: 1123px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        position: relative;
+      }
+      .subject {
+        background: #fafafa;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        margin: 0;
+      }
+      .info-list { margin: 12px 0; padding-right: 20px; }
+      .info-list li { margin-bottom: 6px; }
+      .A4::before {
+        content: "";
+        position: absolute;
+        top: 2.4in;
+        left: 1in;
+        right: 1in;
+        bottom: 1in;
+        border: 2px dashed rgba(0,0,0,0.15);
+        pointer-events: none;
+      }
+      .A4 p {
+        margin: 0;
+        text-align: justify;
+        text-justify: inter-word;
+      }
+      .first-paragraph { text-align: justify !important; text-justify: inter-word;  }
+      .justify-filler { display: inline-block; width: 100%; opacity: 0; }
+      .email-wrapper-fixed { direction: rtl; unicode-bidi: isolate; display: inline-block; }
+      .arabic-spacer { display: inline-block; width: 0; }
+      .email-block {
+        display: inline-block;
+        direction: ltr;
+        unicode-bidi: bidi-override;
+        text-align: left;
+      }
+      .A4 p + p { margin-top: 0; }
     </style>
   </head>
   <body>
-    <div class="letter">
-      <p>السادة / ${bankName}</p>
-      <p>المحترمين،</p>
-      <p>الموضوع: طلب تمديد الضمان البنكي رقم (${guaranteeNo}) والعائد للعقد رقم (${contractNo})</p>
-      <p>إشارة إلى الضمان البنكي الصادر منكم لصالح مستشفى الملك فيصل التخصصي، وبناءً على المعلومات التالية:</p>
-      <ul>
-        <li>المبلغ: ${amount}</li>
-        <li>اسم المورد: ${supplierName}</li>
-        <li>تاريخ الانتهاء: ${expiry}</li>
-      </ul>
-      <p>نأمل منكم التكرم بتمديد تاريخ الضمان المشار إليه حتى تاريخ ${renewal}.</p>
-    </div>
+    <section class="letter-preview">
+      <div class="card-head">
+        <h2>معاينة الخطاب</h2>
+        <div class="muted">خطاب عربي جاهز للطباعة للصف المحدد.</div>
+      </div>
+
+      <div class="A4">
+        <div class="header-line" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div class="to-line" style="margin:0;">السادة / ${bankName}</div>
+          <div class="greeting" style="margin:0;">المحترمين</div>
+        </div>
+
+        <div style="margin:0; line-height:1.6;">
+          <div style="margin:0; line-height:1;">
+            <div>إدارة المؤسسات المالية - قسم الضمانات</div>
+            <div>ص.ب. ٥٦٠٠٦ الرياض ١١٥٥٤</div>
+            <div>بريد الكتروني: bgfinance@kfshrc.edu.sa</div>
+          </div>
+
+          <div style="text-align:right; font-weight:normal; margin:0;">السَّلام عليكُم ورحمَة الله وبركاتِه</div>
+
+          <div class="subject">
+            الموضوع:
+            طلب تمديد الضمان البنكي رقم (${guaranteeNo}) والعائد للعقد رقم (${contractNo})
+          </div>
+
+          <div class="first-paragraph">
+            إشارة الى الضمان البنكي الموضح أعلاه، والصادر منكم لصالح مستشفى الملك فيصل التخصصي ومركز الأبحاث بالرياض
+            على حساب ${supplierName} بمبلغ قدره ${amount}. نأمل منكم تمديد فترة سريان الضمان حتى تاريخ ${renewal} (تاريخ الانتهاء الحالي ${expiry}) مع بقاء الشروط الأخرى دون تغيير،
+            وإفادتنا بذلك من خلال البريد الإلكتروني المخصص للضمانات البنكية لدى مستشفى الملك فيصل التخصصي ومركز الأبحاث بالرياض (bgfinance@kfshrc.edu.sa).
+          </div>
+
+          <div>كما نأمل منكم إرسال أصل تمديد الضمان إلى:</div>
+          <div style="margin-right:2.5em;">مستشفى الملك فيصل التخصصي ومركز الأبحاث – الرياض</div>
+          <div style="margin-right:2.5em;">ص.ب ٣٣٥٤ الرياض ١١٢١١</div>
+          <div style="margin-right:2.5em;">مكتب الخدمات الإدارية</div>
+
+          <div class="first-paragraph">
+            علمًا بأنه في حال عدم تمكن البنك من تمديد الضمان المذكور قبل انتهاء مدة سريانه، فيجب على البنك دفع قيمة الضمان إلينا حسب النظام.
+          </div>
+
+          <div style="text-indent:4em;">وَتفضَّلوا بِقبُول خَالِص تحيَّاتِي</div>
+
+          <div style="text-align: center ; margin-right:10em;">
+            مُدير الإدارة العامَّة للعمليَّات المحاسبيَّة<br><br>
+            سَامِي بن عبَّاس الفايز
+          </div>
+        </div>
+      </div>
+    </section>
   </body>
 </html>`;
   };
