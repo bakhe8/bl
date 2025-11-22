@@ -1,7 +1,8 @@
 import React from "react";
-import { LetterPreview } from "../shared/LetterPreview";
 
 export function PreviewPanel({ record }) {
+  const htmlTemplate = record?.letterHtml || record?.rawHtml || null;
+
   return (
     <section className="card">
       <div className="card-head">
@@ -10,7 +11,20 @@ export function PreviewPanel({ record }) {
           <p className="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
         </div>
       </div>
-      {record ? <LetterPreview record={record} /> : <div className="muted">اختر صفًا لعرض الخطاب.</div>}
+      {record ? (
+        htmlTemplate ? (
+          <iframe
+            title="letter-preview"
+            className="letter-iframe"
+            srcDoc={htmlTemplate}
+            sandbox=""
+          />
+        ) : (
+          <div className="muted">لا يوجد قالب HTML مرفق لهذا السجل.</div>
+        )
+      ) : (
+        <div className="muted">اختر صفًا لعرض الخطاب.</div>
+      )}
     </section>
   );
 }
