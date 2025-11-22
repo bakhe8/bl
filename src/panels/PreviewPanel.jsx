@@ -171,12 +171,14 @@ export function PreviewPanel({ record }) {
       </div>
       {record ? (
         htmlTemplate ? (
-          <iframe
-            title="letter-preview"
-            className="letter-iframe"
-            srcDoc={htmlTemplate}
-            sandbox=""
-          />
+          <div className="letter-iframe-wrap">
+            <iframe
+              title="letter-preview"
+              className="letter-iframe"
+              srcDoc={htmlTemplate}
+              sandbox=""
+            />
+          </div>
         ) : (
           <div className="muted">لا يوجد قالب HTML مرفق لهذا السجل.</div>
         )
