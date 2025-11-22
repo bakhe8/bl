@@ -110,11 +110,6 @@ export function PreviewPanel({ record }) {
   </head>
   <body>
     <section class="letter-preview">
-      <div class="card-head">
-        <h2>معاينة الخطاب</h2>
-        <div class="muted">خطاب عربي جاهز للطباعة للصف المحدد.</div>
-      </div>
-
       <div class="A4">
         <div class="header-line" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <div class="to-line" style="margin:0;">السادة / ${bankName}</div>
