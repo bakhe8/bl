@@ -117,19 +117,6 @@
       ]
     },
     {
-      "official": "البنك السعودي البريطاني (ساب)",
-      "english": "SABB Bank",
-      "short": [
-        "sabb",
-        "sab",
-        "s.a.b",
-        "sabb bank",
-        "البريطاني",
-        "ساب",
-        "بنك ساب"
-      ]
-    },
-    {
       "official": "البنك السعودي للاستثمار",
       "english": "Saudi Investment Bank (SAIB)",
       "short": [
@@ -447,8 +434,22 @@
     },
     {
       "official": "البنك السعودي الاول",
+      "english": "Saudi Awwal Bank (SAB)",
       "short": [
-        "البنك السعودي الأول"
+        "البنك السعودي الأول",
+        "sabb",
+        "sab",
+        "s.a.b",
+        "sabb bank",
+        "البريطاني",
+        "ساب",
+        "بنك ساب",
+        "البنك السعودي البريطاني",
+        "saudi british bank",
+        "sabb ksa",
+        "saudi awwal bank",
+        "awwal bank",
+        "al awwal"
       ]
     },
     {
@@ -461,12 +462,6 @@
       "official": "بنك بي ان بي باريبا السعودية",
       "short": [
         "بنك بي ان بي باريبا السعودية"
-      ]
-    },
-    {
-      "official": "البنك السعودي البريطاني",
-      "short": [
-        "البنك السعودي البريطاني"
       ]
     },
     {
