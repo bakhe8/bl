@@ -43,23 +43,34 @@ export function SupplierTypeahead({
     if (!debouncedQuery) return [];
     const normQ = normalizeName(debouncedQuery);
     if (!normQ) return [];
+    const isArabic = (text) => /[\u0600-\u06FF]/.test(text || "");
+
     return suppliersCanonical
       .map((c) => {
         const normCanon = c.normalized || normalizeName(c.canonical);
         const aliases = c.normalizedAliases || [];
         const aliasScore = aliases.reduce((best, a) => Math.max(best, fuzzyMatchScore(normQ, a)), 0);
         const canonScore = fuzzyMatchScore(normQ, normCanon);
-        const baseScore = Math.max(canonScore, aliasScore);
+        // نعطي أفضلية طفيفة للتطابق مع الاسم الرسمي العربي مقابل alias إنجليزي
+        const weightedCanon = canonScore + 0.08; // دفعة للأسماء الرسمية
+        const weightedAlias = aliasScore * 0.95;
+        const baseScore = Math.max(weightedCanon, weightedAlias);
         const variantBoost = variantScoresByOfficial.get(c.canonical) || 0;
         const finalScore = Math.max(baseScore, variantBoost);
         return {
           official: c.canonical,
           score: finalScore,
           aliases: c.aliases || [],
+          isArabicOfficial: isArabic(c.canonical),
         };
       })
       .filter((s) => s.score > 0.4)
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => {
+        const delta = b.score - a.score;
+        if (Math.abs(delta) > 1e-4) return delta;
+        if (a.isArabicOfficial !== b.isArabicOfficial) return a.isArabicOfficial ? -1 : 1;
+        return a.official.localeCompare(b.official, "ar");
+      })
       .slice(0, 10);
   }, [debouncedQuery, suppliersCanonical, variantScoresByOfficial]);
 
