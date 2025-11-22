@@ -1,22 +1,27 @@
-# bl
+# نظام توليد خطابات تمديد الضمانات البنكية — إصدار 1.0.0
 [![CI](https://github.com/bakhe8/bl/actions/workflows/ci.yml/badge.svg)](https://github.com/bakhe8/bl/actions/workflows/ci.yml)
 
-Starter repository initialized locally. Kick things off by cloning, creating your first feature branch, and adding the stack you want to use.
+واجهة واحدة لتحميل ملف Excel، حلّ الغموض في أسماء البنوك/الموردين، ومعاينة الخطاب وطباعة جاهزة. التعلّم للموردين فقط، والبنوك من قاموس رسمي ثابت.
 
-## Getting started
-- Install your preferred toolchain (Node, Python, .NET, etc.).
-- Add project files and update `.gitignore` for your stack.
-- Run `git status` to verify changes, then commit and push to `main`.
+## التشغيل السريع
+```bash
+npm install
+npm run dev   # خادم Vite على 5173
+# أو تشغيل بناء إنتاج:
+npm run build
+```
 
-## CI (GitHub Actions)
-- A starter workflow lives at `.github/workflows/ci.yml`; it checks out the repo and runs language-specific steps when package files exist.
-- Extend the workflow with your stack (npm, Python, .NET, etc.) so pushes and PRs run your tests automatically.
-- Badge above tracks the latest `main` build.
+## الميزات الرئيسية
+- **محرك مطابقة الموردين**: قاموس موحّد (416 مورد) + aliases + Fuzzy Jaro-Winkler + تعلّم محلي (LocalStorage) مع Typeahead ذكي واقتراحات عربية.
+- **البنوك ثابتة**: قاموس رسمي إصدار 3 مع جميع الاختصارات الشائعة، بدون تعلّم.
+- **واجهة واحدة**: بانلز للتحميل/التنبيهات/القرارات/التفاصيل/المعاينة، مع صف قرار موسّع لكل سجل.
+- **تنميط التواريخ**: تمديد تلقائي سنة من تاريخ الصلاحية (VALIDITY DATE) مع تحذير عند فشل التحويل.
 
-## Documentation
-- الوثائق تبدأ من `docs/README.md` مع روابط إلى ملفات التفاصيل: نظرة عامة، متطلبات، معمارية، إعداد وتشغيل، وتشغيل يومي.
-- يتم تغذية الوثائق من تعليمات `docs/draft.md`؛ حافظ على المسودة محدثة ليُعاد تنظيم الوثائق بناءً عليها.
+## التوثيق
+- البداية من `docs/README.md` (فهرس شامل).
+- خطة الموردين الموحّدين: `docs/suppliers_canonical_plan.md`.
+- باقي الملفات: نظرة عامة، متطلبات، تصميم النظام، التشغيل اليومي، القوالب… إلخ.
 
-## Notes
-- Remote is expected at `git@github.com:bakhe8/bl.git`.
-- Add a LICENSE when you decide on one.
+## الملاحظات
+- التعلم محفوظ محليًا للموردين فقط؛ يمكن تصدير/استيراد يدويًا من أدوات الـ Console إذا لزم.
+- لا يوجد ترخيص محدد بعد.
