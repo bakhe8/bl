@@ -3,6 +3,7 @@ import { normalizeName } from "../logic/normalization";
 import { fuzzyMatchScore } from "../logic/matching";
 
 const DEBOUNCE_MS = 200;
+const BLUR_DELAY_MS = 120;
 
 export function SupplierTypeahead({
   value,
@@ -14,6 +15,7 @@ export function SupplierTypeahead({
 }) {
   const [query, setQuery] = useState(value || "");
   const [debouncedQuery, setDebouncedQuery] = useState(value || "");
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     setQuery(value || "");
@@ -65,6 +67,7 @@ export function SupplierTypeahead({
     onChange && onChange(official);
     setQuery(official);
     setDebouncedQuery(official);
+    setIsFocused(false);
   };
 
   const handleAddNew = () => {
@@ -85,8 +88,10 @@ export function SupplierTypeahead({
           onChange && onChange(e.target.value);
         }}
         disabled={disabled}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setTimeout(() => setIsFocused(false), BLUR_DELAY_MS)}
       />
-      {query && (
+      {isFocused && (query || suggestions.length > 0) && (
         <div className="typeahead-list">
           {suggestions.map((s) => (
             <button key={s.official} type="button" className="typeahead-item" onClick={() => handleSelect(s.official)}>
