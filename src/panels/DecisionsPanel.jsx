@@ -22,6 +22,12 @@ export function DecisionsPanel({
     return merged.filter((v, i, arr) => arr.indexOf(v) === i);
   }, [supplierVariants, suppliersCanonical]);
 
+  const showLearnCol = useMemo(
+    () => records.some((r) => r.supplierLearnStatus),
+    [records]
+  );
+  const colCount = showLearnCol ? 5 : 4;
+
   const getDraftBank = (r) => {
     const suggested = r && (r.bankFuzzySuggestion || r.bankOfficial || r.bankDisplay || r.bankRaw);
     return decisionDraft.bank || suggested || "";
@@ -84,7 +90,7 @@ export function DecisionsPanel({
               <th>البنك</th>
               <th>المورد</th>
               <th>الحالة</th>
-              <th>تعلّم المورد</th>
+              {showLearnCol ? <th>تعلّم المورد</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -113,11 +119,11 @@ export function DecisionsPanel({
                       {probabilityBar(r.supplierProbability)}
                     </td>
                     <td className={status.className}>{status.label}</td>
-                    <td>{supplierStageChip(r)}</td>
+                    {showLearnCol ? <td>{supplierStageChip(r)}</td> : null}
                   </tr>
                     {isSelected && r.needsDecision ? (
                       <tr className="inline-row">
-                        <td colSpan={5}>
+                        <td colSpan={colCount}>
                           <div className="inline-decision">
                             <div className="inline-grid">
                             {needsBank ? (
