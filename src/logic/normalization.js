@@ -59,7 +59,8 @@ export const formatDateValue = (value) => {
   if (!dateObj) return String(value);
   try {
     return (
-      new Intl.DateTimeFormat("ar-SA", {
+      new Intl.DateTimeFormat("ar", {
+        calendar: "gregory",
         day: "2-digit",
         month: "long",
         year: "numeric",
