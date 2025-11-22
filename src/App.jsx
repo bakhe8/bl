@@ -188,9 +188,8 @@ export default function App() {
           <section className="card">
             <div className="card-head">
               <div>
-                <h2>1) رفع ملف Excel</h2>
+                <h2>رفع ملف Excel</h2>
                 <p className="muted">الصيغة المدعومة: ‎.xlsx بترميز UTF-8 – الحجم الأقصى 20MB.</p>
-                <p className="muted">اختر الملف ثم اضغط “بدء التحليل” لعرض السطور الغامضة.</p>
               </div>
             </div>
             <form className="field-inline" onSubmit={(e) => { e.preventDefault(); handleAnalyze(); }}>
