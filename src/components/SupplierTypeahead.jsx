@@ -64,6 +64,13 @@ export function SupplierTypeahead({
   const handleSelect = (official) => {
     onChange && onChange(official);
     setQuery(official);
+    setDebouncedQuery(official);
+  };
+
+  const handleAddNew = () => {
+    const val = (query || "").trim();
+    if (!val) return;
+    handleSelect(val);
   };
 
   return (
@@ -79,7 +86,7 @@ export function SupplierTypeahead({
         }}
         disabled={disabled}
       />
-      {query && suggestions.length > 0 && (
+      {query && (
         <div className="typeahead-list">
           {suggestions.map((s) => (
             <button key={s.official} type="button" className="typeahead-item" onClick={() => handleSelect(s.official)}>
@@ -92,7 +99,9 @@ export function SupplierTypeahead({
               ) : null}
             </button>
           ))}
-          <div className="typeahead-item muted">+ إضافة مورد جديد (تدقيق عقود)</div>
+          <button type="button" className="typeahead-item muted" onClick={handleAddNew}>
+            + إضافة مورد جديد (تدقيق عقود)
+          </button>
         </div>
       )}
     </div>
