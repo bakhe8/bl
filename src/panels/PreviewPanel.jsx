@@ -177,6 +177,7 @@ export function PreviewPanel({ record }) {
               className="letter-iframe"
               srcDoc={htmlTemplate}
               sandbox=""
+              scrolling="no"
             />
           </div>
         ) : (
