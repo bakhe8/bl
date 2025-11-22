@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import EnvDebug from "./components/EnvDebug";
 import { DecisionsPanel } from "./panels/DecisionsPanel";
 import { RecordDetailsPanel } from "./panels/RecordDetailsPanel";
 import { PreviewPanel } from "./panels/PreviewPanel";
@@ -182,7 +181,6 @@ export default function App() {
         <div>
           <h1>نظام توليد خطابات تمديد الضمانات البنكية</h1>
           <p className="lede">رفع ملف Excel → حل الغموض → خطاب جاهز للطباعة.</p>
-          <EnvDebug />
         </div>
       </header>
 
