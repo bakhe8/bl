@@ -46,7 +46,8 @@ export function SupplierTypeahead({
     const isArabic = (text) => /[\u0600-\u06FF]/.test(text || "");
     const normCurrent = normalizeName(value || "");
 
-    return suppliersCanonical
+    // نحسب الترشيحات لكل سجل، ثم ندمج التكرارات بنفس الاسم الرسمي ونأخذ أعلى درجة
+    const prelim = suppliersCanonical
       .map((c) => {
         const normCanon = c.normalized || normalizeName(c.canonical);
         const aliases = c.normalizedAliases || [];
@@ -68,6 +69,24 @@ export function SupplierTypeahead({
         };
       })
       .filter((s) => s.score > 0.4)
+      .sort((a, b) => {
+        const delta = b.score - a.score;
+        if (Math.abs(delta) > 1e-4) return delta;
+        if (a.isArabicOfficial !== b.isArabicOfficial) return a.isArabicOfficial ? -1 : 1;
+        return a.official.localeCompare(b.official, "ar");
+      });
+
+    const dedup = new Map();
+    prelim.forEach((s) => {
+      if (!dedup.has(s.official)) {
+        dedup.set(s.official, s);
+      } else {
+        const prev = dedup.get(s.official);
+        if (s.score > prev.score) dedup.set(s.official, s);
+      }
+    });
+
+    return Array.from(dedup.values())
       .sort((a, b) => {
         const delta = b.score - a.score;
         if (Math.abs(delta) > 1e-4) return delta;
