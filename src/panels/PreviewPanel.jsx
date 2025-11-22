@@ -10,9 +10,7 @@ export function PreviewPanel({ record }) {
           <p className="muted">خطاب عربي جاهز للطباعة للصف المحدد.</p>
         </div>
       </div>
-      <div className="results">
-        {record ? <LetterPreview record={record} /> : "اختر صفًا لعرض الخطاب."}
-      </div>
+      {record ? <LetterPreview record={record} /> : <div className="muted">اختر صفًا لعرض الخطاب.</div>}
     </section>
   );
 }
